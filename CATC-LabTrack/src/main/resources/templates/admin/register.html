@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Equipment register · CATC LabTrack</title>
+  <link rel="stylesheet" href="/css/register.css">
+  <script src="/js/register.js" defer></script>
+</head>
+<body>
+  <header><strong>CATC LabTrack</strong><span>Custodian workspace</span>
+    <form th:action="@{/logout}" method="post"><button type="submit">Sign out</button></form>
+  </header>
+  <main>
+    <h1>Equipment register</h1>
+    <section th:replace="~{shared/equipment :: catalog}"></section>
+    <section th:replace="~{shared/equipment :: create}"></section>
+  </main>
+</body>
+</html>

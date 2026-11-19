@@ -1,0 +1,19 @@
+:root { font: 100%/1.5 "Segoe UI", sans-serif; color: #153e34; background: #edf3ee; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { min-height: 100svh; display: grid; place-items: center; padding: 1rem; }
+section { width: min(100%, 27rem); padding: clamp(1.5rem, 5vw, 3rem); background: white; border: 1px solid #c6d7cd; border-top: .4rem solid #165747; border-radius: .8rem; }
+.brand { margin: 0 0 2rem; font-weight: 700; }
+.brand span { margin-inline: .3rem; color: #8b7042; }
+h1 { margin: 0; font: 600 2.6rem/1.12 Georgia, serif; }
+p { margin: .65rem 0 1.5rem; }
+form { display: grid; gap: .45rem; }
+label { font-weight: 600; }
+input, button { padding: .7rem .9rem; font: inherit; border-radius: .4rem; }
+input { min-width: 0; margin-bottom: .55rem; border: 1px solid #789289; }
+button { margin-top: .5rem; border: 0; background: #165747; color: white; cursor: pointer; font-weight: 650; }
+button:hover { background: #104435; }
+:focus-visible { outline: 3px solid #988047; outline-offset: 2px; }
+.error, .notice { padding: .65rem .85rem; border-radius: .35rem; }
+.error { background: #fff0ec; color: #832819; }
+.notice { background: #edf5ed; }
