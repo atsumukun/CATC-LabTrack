@@ -70,7 +70,7 @@ Paths beginning with **J/** below are relative to **src/main/java/ph/edu/catc/la
 
 | Member | Folders and files to manage | Individual deliverable and demo |
 |---|---|---|
-| 1 · You, team leader | Root pom.xml, README.md, docs/, J/setup/, J/LabTrackApplication.java, R/application.properties | Maintain the JDK 25 build and sample setup. Integrate changes, coordinate the ten checks, and demonstrate a clean import and reset. |
+| 1 · Team leader | Root pom.xml, README.md, docs/, J/setup/, J/LabTrackApplication.java, R/application.properties | Maintain the JDK 25 build and sample setup. Integrate changes, coordinate the ten checks, and demonstrate a clean import and reset. |
 | 2 · Equipment data and business rules | J/equipment/model/, J/equipment/repository/, J/equipment/service/ | Own the H2/JPA model, location query and normalized asset code. Implement update and delete service methods. Demonstrate an unchanged code succeeds on update and a conflicting code fails. |
 | 3 · REST API and validation | J/api/, J/equipment/dto/ | Implement PUT and DELETE, coordinate their service signatures with Member 2, and add a helpful missing-ID response. Capture 201, 400, 404 and 409 examples. |
 | 4 · Security and admin frontend | J/security/, R/schema.sql, R/templates/admin/ | Own database-backed login, CSRF and authorization. Add admin edit/delete controls when the endpoints are ready. Demonstrate ADMIN deletion and USER denial using valid tokens. |
