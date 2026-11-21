@@ -47,6 +47,10 @@ public class Reservation {
         this.createdAt = Instant.now();
     }
 
+    public void transitionTo(ReservationStatus next) {
+        this.status = next;
+    }
+
     public Long getId() { return id; }
     public Equipment getEquipment() { return equipment; }
     public int getQuantity() { return quantity; }

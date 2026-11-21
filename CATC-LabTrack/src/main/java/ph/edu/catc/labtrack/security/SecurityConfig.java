@@ -22,6 +22,7 @@ public class SecurityConfig {
                 .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
                 .requestMatchers("/login", "/css/login.css").permitAll()
                 .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/reservations/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/equipment/**").hasRole("ADMIN")
                 .anyRequest().hasAnyRole("USER", "ADMIN"))
             .formLogin(form -> form.loginPage("/login").defaultSuccessUrl("/", true).permitAll())

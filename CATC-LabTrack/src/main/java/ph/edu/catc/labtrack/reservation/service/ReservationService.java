@@ -10,6 +10,7 @@ import ph.edu.catc.labtrack.reservation.model.Reservation;
 import ph.edu.catc.labtrack.reservation.repository.ReservationRepository;
 
 import java.util.List;
+import ph.edu.catc.labtrack.reservation.model.ReservationStatus;
 
 @Service
 public class ReservationService {
@@ -43,6 +44,29 @@ public class ReservationService {
                 input.yearLevel().strip(), input.course().strip(), input.subject().strip(),
                 input.useDate(), username));
         return ReservationResponse.from(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReservationResponse> register() {
+        return reservations.findAllByOrderByCreatedAtDesc().stream().map(ReservationResponse::from).toList();
+    }
+
+    @Transactional
+    public ReservationResponse transition(long id, ReservationStatus next) {
+        var booking = reservations.findForUpdate(id).orElseThrow(() ->
+                new ReservationException("Reservation not found.", HttpStatus.NOT_FOUND));
+        var current = booking.getStatus();
+        boolean pickup = current == ReservationStatus.PENDING && next == ReservationStatus.BORROWED;
+        boolean cancel = current == ReservationStatus.PENDING && next == ReservationStatus.CANCELLED;
+        boolean returned = current == ReservationStatus.BORROWED && next == ReservationStatus.RETURNED;
+        if (!pickup && !cancel && !returned) {
+            throw new ReservationException("This reservation is already " + current + ".", HttpStatus.CONFLICT);
+        }
+        var item = equipment.findForUpdate(booking.getEquipment().getId()).orElseThrow();
+        if (pickup) item.pickUpUnits(booking.getQuantity());
+        else item.releaseUnits(booking.getQuantity(), returned);
+        booking.transitionTo(next);
+        return ReservationResponse.from(booking);
     }
 
     @Transactional(readOnly = true)

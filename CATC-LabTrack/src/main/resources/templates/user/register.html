@@ -43,9 +43,9 @@
 
     <div class="toolbar">
       <nav class="chips" aria-label="Filter by status">
-        <a th:href="@{/user(location=${location})}" th:classappend="${status == null} ? 'active'"
+        <a th:href="@{/user(q=${q},location=${location})}" th:classappend="${status == null} ? 'active'"
            th:attr="aria-current=${status == null} ? 'true'">All</a>
-        <a th:each="s : ${statuses}" th:href="@{/user(location=${location},status=${s.name()})}"
+        <a th:each="s : ${statuses}" th:href="@{/user(q=${q},location=${location},status=${s.name()})}"
            th:classappend="${status == s.name()} ? 'active'"
            th:attr="aria-current=${status == s.name()} ? 'true'"
            th:text="${#strings.capitalize(s.name().toLowerCase())}">Available</a>
@@ -54,7 +54,7 @@
         <input type="hidden" name="status" th:if="${status != null}" th:value="${status}">
         <label class="field">
           <span>Search</span>
-          <input id="search" type="search" placeholder="Name, asset code or location" autocomplete="off">
+          <input id="search" name="q" th:value="${q}" type="search" placeholder="Name, asset code or location" autocomplete="off">
         </label>
         <label class="field">
           <span>Lab location</span>

@@ -33,6 +33,7 @@ public class RegisterPages {
     @GetMapping("/user")
     String user(@RequestParam(defaultValue = "") String location,
                 @RequestParam(required = false) Status status,
+                @RequestParam(defaultValue = "") String q,
                 Authentication account, Model model) {
         var all = service.list(location);
         var items = status == null ? all : all.stream().filter(i -> i.status() == status).toList();
@@ -40,6 +41,7 @@ public class RegisterPages {
         model.addAttribute("items", items);
         model.addAttribute("location", location);
         model.addAttribute("status", status == null ? null : status.name());
+        model.addAttribute("q", q);
         model.addAttribute("statuses", Status.values());
         model.addAttribute("username", account.getName());
         model.addAttribute("maxQty", ReservationService.MAX_PER_REQUEST);
@@ -60,6 +62,7 @@ public class RegisterPages {
     String admin(@RequestParam(defaultValue = "") String location, Model model) {
         model.addAttribute("items", service.list(location));
         model.addAttribute("location", location);
+        model.addAttribute("reservations", reservations.register());
         return "admin/register";
     }
 }
