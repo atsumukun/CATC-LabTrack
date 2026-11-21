@@ -8,6 +8,8 @@ import ph.edu.catc.labtrack.equipment.model.Equipment;
 import ph.edu.catc.labtrack.equipment.model.Status;
 import ph.edu.catc.labtrack.equipment.repository.EquipmentRepository;
 
+import java.util.Locale;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,8 +36,30 @@ public class EquipmentService {
         return repository.findById(id).map(EquipmentResponse::from);
     }
 
+    public EquipmentResponse get(long id) {
+        return find(id).orElseThrow(() -> new EquipmentNotFoundException(id));
+    }
+
+    @Transactional
+    public EquipmentResponse update(long id, EquipmentRequest input) {
+        var item = repository.findForUpdate(id).orElseThrow(() -> new EquipmentNotFoundException(id));
+        String code = input.assetCode().toUpperCase(Locale.ROOT);
+        if (!item.getAssetCode().equals(code) && repository.existsByAssetCodeIgnoreCase(code)) {
+            throw new DuplicateCodeException(code);
+        }
+        item.update(code, input.name().strip(), input.location().strip(), input.status(), input.totalUnits(), input.description(), input.imageUrl());
+        repository.flush();
+        return EquipmentResponse.from(item);
+    }
+
+    @Transactional
+    public void delete(long id) {
+        var item = repository.findForUpdate(id).orElseThrow(() -> new EquipmentNotFoundException(id));
+        repository.delete(item);
+    }
+
     public EquipmentResponse create(EquipmentRequest input) {
-        String code = input.assetCode().strip();
+        String code = input.assetCode().toUpperCase(Locale.ROOT);
         if (repository.existsByAssetCodeIgnoreCase(code)) throw new DuplicateCodeException(code);
         int units = input.totalUnits() == null ? 1 : input.totalUnits();
         var item = new Equipment(code, input.name().strip(), clean(input.description()), clean(input.imageUrl()),

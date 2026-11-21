@@ -46,6 +46,12 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
+    public ReservationResponse get(long id, String username) {
+        return reservations.findByIdAndRequestedBy(id, username).map(ReservationResponse::from)
+                .orElseThrow(() -> new ReservationException("Reservation not found.", HttpStatus.NOT_FOUND));
+    }
+
+    @Transactional(readOnly = true)
     public List<ReservationResponse> mine(String username) {
         return reservations.findByRequestedByOrderByCreatedAtDesc(username).stream()
                 .map(ReservationResponse::from)

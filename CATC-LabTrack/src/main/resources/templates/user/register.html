@@ -17,6 +17,7 @@
   </div>
   <div class="account">
     <span>Signed in as <b th:text="${username}">user</b></span>
+    <a href="/user/manage">Equipment register</a>
     <form th:action="@{/logout}" method="post"><button type="submit" class="btn btn-ghost">Sign out</button></form>
   </div>
 </header>
@@ -75,7 +76,7 @@
           <td data-label="Asset code"><span class="code" th:text="${item.assetCode()}">CATC-mlt001DM</span></td>
           <td data-label="Equipment">
             <div class="equip">
-              <img th:src="@{${item.imageUrl() ?: '/img/equipment/placeholder.svg'}}" alt="" width="64" height="64" loading="lazy">
+              <img th:if="${item.imageUrl() != null}" th:src="${item.imageUrl()}" alt="" width="64" height="64" loading="lazy">
               <div>
                 <strong th:text="${item.name()}">Digital Multimeter</strong>
                 <span th:text="${item.description()}">Short description</span>
@@ -121,7 +122,7 @@
 
 <!-- Reservation dialog: quantity → details → review -->
 <dialog id="reserve-dialog" aria-labelledby="dlg-title">
-  <form id="reserve-form">
+  <form id="reserve-form" novalidate>
     <header class="dlg-head">
       <div>
         <p class="eyebrow">Reserve equipment</p>
@@ -137,7 +138,7 @@
     <div class="dlg-body">
       <section data-step="1">
         <div class="summary">
-          <img id="dlg-image" src="" alt="" width="72" height="72">
+          <img id="dlg-image" hidden alt="" width="72" height="72">
           <div>
             <span class="code" id="dlg-code"></span>
             <p id="dlg-location" class="muted"></p>

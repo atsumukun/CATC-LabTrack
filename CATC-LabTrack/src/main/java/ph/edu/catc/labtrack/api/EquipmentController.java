@@ -1,21 +1,13 @@
 package ph.edu.catc.labtrack.api;
 
-import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import ph.edu.catc.labtrack.equipment.dto.EquipmentRequest;
-import ph.edu.catc.labtrack.equipment.dto.EquipmentResponse;
 import ph.edu.catc.labtrack.equipment.model.Status;
-import ph.edu.catc.labtrack.equipment.service.EquipmentService;
-
 import java.net.URI;
 import java.util.List;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import ph.edu.catc.labtrack.equipment.dto.*;
+import ph.edu.catc.labtrack.equipment.service.EquipmentService;
 
 @RestController
 @RequestMapping("/api/equipment")
@@ -32,7 +24,18 @@ public class EquipmentController {
 
     @GetMapping("/{id}")
     ResponseEntity<EquipmentResponse> find(@PathVariable long id) {
-        return ResponseEntity.of(service.find(id));
+        return ResponseEntity.ok(service.get(id));
+    }
+
+    @PutMapping("/{id}")
+    EquipmentResponse update(@PathVariable long id, @Valid @RequestBody EquipmentRequest input) {
+        return service.update(id, input);
+    }
+
+    @DeleteMapping("/{id}")
+    ResponseEntity<Void> delete(@PathVariable long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping

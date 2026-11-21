@@ -20,7 +20,7 @@
         const q = search.value.trim().toLowerCase();
         let shown = 0;
         rows.forEach((row) => {
-            const match = !q || row.textContent.toLowerCase().includes(q);
+            const match = !q || [row.dataset.code, row.dataset.name, row.dataset.location].some(value => value.toLowerCase().includes(q));
             row.hidden = !match;
             if (match) shown++;
         });
@@ -146,7 +146,8 @@
         $('#dlg-code').textContent = state.item.code;
         $('#dlg-location').textContent = state.item.location;
         const preview = $('#dlg-image');
-        preview.src = img ? img.getAttribute('src') : '';
+        preview.hidden = !img;
+        if (img) preview.src = img.src; else preview.removeAttribute('src');
 
         renderQuantity();
         showStep(1);
@@ -234,6 +235,7 @@
         if (state.qty < state.max) { state.qty++; renderQuantity(); }
     });
 
+    dialog.addEventListener('cancel', event => { if (state.busy) event.preventDefault(); });
     backBtn.addEventListener('click', () => showStep(Math.max(1, state.step - 1)));
 
     form.addEventListener('submit', (event) => {
@@ -250,7 +252,7 @@
     });
 
     $$('[data-close]').forEach((button) => {
-        button.addEventListener('click', () => button.closest('dialog').close());
+        button.addEventListener('click', () => { if (!state.busy) button.closest('dialog').close(); });
     });
 
     [dialog, successDialog].forEach((d) => {

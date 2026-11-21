@@ -10,11 +10,25 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ph.edu.catc.labtrack.equipment.service.DuplicateCodeException;
 import ph.edu.catc.labtrack.reservation.service.ReservationException;
 
+import ph.edu.catc.labtrack.equipment.service.EquipmentNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import java.util.Map;
 import java.util.Objects;
 
 @RestControllerAdvice(basePackageClasses = EquipmentController.class)
 public class ApiErrors {
+    @ExceptionHandler(EquipmentNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    Map<String,String> missing(EquipmentNotFoundException ex) {
+        return Map.of("message", ex.getMessage());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    Map<String,String> conflict() {
+        return Map.of("message", "The equipment conflicts with a stored record. Check the asset code.");
+    }
+
     @ExceptionHandler(DuplicateCodeException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     Map<String, String> duplicate(DuplicateCodeException ex) { return Map.of("message", ex.getMessage()); }

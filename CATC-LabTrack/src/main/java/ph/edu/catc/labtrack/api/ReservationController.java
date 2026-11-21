@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +27,11 @@ public class ReservationController {
     ResponseEntity<ReservationResponse> create(@Valid @RequestBody ReservationRequest input, Authentication account) {
         var saved = service.reserve(input, account.getName());
         return ResponseEntity.created(URI.create("/api/reservations/" + saved.id())).body(saved);
+    }
+
+    @GetMapping("/{id}")
+    ReservationResponse get(@PathVariable long id, Authentication account) {
+        return service.get(id, account.getName());
     }
 
     @GetMapping("/mine")

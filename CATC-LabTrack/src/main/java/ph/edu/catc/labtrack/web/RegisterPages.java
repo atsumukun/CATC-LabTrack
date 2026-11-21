@@ -49,6 +49,13 @@ public class RegisterPages {
         return "user/register";
     }
 
+    @GetMapping("/user/manage")
+    String manage(@RequestParam(defaultValue = "") String location, Model model) {
+        model.addAttribute("items", service.list(location));
+        model.addAttribute("location", location);
+        return "user/manage";
+    }
+
     @GetMapping("/admin")
     String admin(@RequestParam(defaultValue = "") String location, Model model) {
         model.addAttribute("items", service.list(location));

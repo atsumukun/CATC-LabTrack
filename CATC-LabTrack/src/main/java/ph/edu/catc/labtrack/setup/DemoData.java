@@ -25,27 +25,27 @@ public class DemoData {
             if (equipment.list("").isEmpty()) {
                 String lab1 = "Engineering Laboratory 1 | Room 301";
                 String lab2 = "Engineering Laboratory 2 | Room 305";
-                String img = "/img/equipment/";
+
 
                 // Electrical Measurement and Testing
                 equipment.create(new EquipmentRequest("CATC-mlt001DM", "Digital Multimeter",
                         "Measures voltage, current and resistance with auto-ranging.",
-                        img + "multimeter.svg", lab1, Status.AVAILABLE, 3));
+                        null, lab1, Status.AVAILABLE, 3));
                 equipment.create(new EquipmentRequest("CATC-clm001CM", "Clamp Meter",
                         "Measures AC current without breaking the circuit.",
-                        img + "clamp-meter.svg", lab1, Status.AVAILABLE, 2));
+                        null, lab1, Status.AVAILABLE, 2));
                 equipment.create(new EquipmentRequest("CATC-osc001DO", "Digital Oscilloscope",
                         "Displays and measures signal waveforms.",
-                        img + "oscilloscope.svg", lab1, Status.AVAILABLE, 2));
+                        null, lab1, Status.AVAILABLE, 2));
                 equipment.create(new EquipmentRequest("CATC-psu001DP", "DC Power Supply",
                         "Adjustable bench supply for powering and testing circuits.",
-                        img + "power-supply.svg", lab2, Status.AVAILABLE, 3));
+                        null, lab2, Status.AVAILABLE, 3));
                 equipment.create(new EquipmentRequest("CATC-fgn001FG", "Function Generator",
                         "Produces sine, square and triangle test signals.",
-                        img + "function-generator.svg", lab2, Status.AVAILABLE, 2));
+                        null, lab2, Status.AVAILABLE, 2));
                 equipment.create(new EquipmentRequest("CATC-ins001IT", "Insulation Resistance Tester",
                         "Checks the insulation condition of wires and motors.",
-                        img + "insulation-tester.svg", lab2, Status.BORROWED, 1));
+                        null, lab2, Status.BORROWED, 1));
             }
         };
     }

@@ -23,6 +23,9 @@ public class Equipment {
     @Column(nullable = false)
     private int availableUnits;
 
+    @Column(nullable = false)
+    private int heldUnits;
+
     protected Equipment() {}
 
     public Equipment(String assetCode, String name, String description, String imageUrl,
@@ -44,9 +47,33 @@ public class Equipment {
             throw new IllegalArgumentException("Not enough free units");
         }
         availableUnits -= quantity;
+        heldUnits += quantity;
         if (availableUnits == 0) {
             status = Status.RESERVED;
         }
+    }
+
+    public void update(String code, String name, String location, Status status, Integer total,
+                       String description, String imageUrl) {
+        int capacity = total == null ? totalUnits : total;
+        int held = heldUnits;
+        if (held > capacity || (held > 0 && status != this.status && status != Status.AVAILABLE)) {
+            throw new ph.edu.catc.labtrack.reservation.service.ReservationException(
+                "This change conflicts with held units.", org.springframework.http.HttpStatus.CONFLICT);
+        }
+        assetCode = code;
+        this.name = name;
+        this.location = location;
+        this.status = status;
+        totalUnits = capacity;
+        if (held > 0) {
+            availableUnits = capacity - held;
+            this.status = availableUnits == 0 ? Status.RESERVED : Status.AVAILABLE;
+        } else {
+            availableUnits = status == Status.AVAILABLE ? capacity : 0;
+        }
+        if (description != null) this.description = description.strip();
+        if (imageUrl != null) this.imageUrl = imageUrl.strip();
     }
 
     public Long getId() { return id; }
