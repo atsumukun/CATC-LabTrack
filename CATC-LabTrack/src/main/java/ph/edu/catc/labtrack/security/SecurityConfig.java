@@ -23,6 +23,8 @@ public class SecurityConfig {
                 .requestMatchers("/login", "/css/login.css").permitAll()
                 .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/equipment/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/equipment/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/equipment/**").hasRole("ADMIN")
                 .anyRequest().hasAnyRole("USER", "ADMIN"))
             .formLogin(form -> form.loginPage("/login").defaultSuccessUrl("/", true).permitAll())
             .logout(logout -> logout.logoutSuccessUrl("/login?logout"))

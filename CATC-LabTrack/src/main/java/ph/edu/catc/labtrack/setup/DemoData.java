@@ -1,7 +1,8 @@
 package ph.edu.catc.labtrack.setup;
 
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import ph.edu.catc.labtrack.equipment.dto.EquipmentRequest;
@@ -13,11 +14,39 @@ public class DemoData {
     @Bean
     CommandLineRunner seed(JdbcTemplate jdbc, BCryptPasswordEncoder encoder, EquipmentService equipment) {
         return args -> {
-            String sql = "insert into app_user(username,password_hash,role) values (?,?,?)";
-            jdbc.update(sql, "user", encoder.encode("user-demo"), "USER");
-            jdbc.update(sql, "admin", encoder.encode("admin-demo"), "ADMIN");
-            equipment.create(new EquipmentRequest("EE-001", "Digital multimeter", "Electrical Engineering Lab", Status.AVAILABLE));
-            equipment.create(new EquipmentRequest("CPE-001", "Breadboard", "Computer Engineering Lab", Status.RESERVED));
+            // Seed only when empty, so restarting against a saved database doesn't fail on duplicates.
+            Integer accounts = jdbc.queryForObject("select count(*) from app_user", Integer.class);
+            if (accounts != null && accounts == 0) {
+                String sql = "insert into app_user(username,password_hash,role) values (?,?,?)";
+                jdbc.update(sql, "user", encoder.encode("user-demo"), "USER");
+                jdbc.update(sql, "admin", encoder.encode("admin-demo"), "ADMIN");
+            }
+
+            if (equipment.list("").isEmpty()) {
+                String lab1 = "Engineering Laboratory 1 | Room 301";
+                String lab2 = "Engineering Laboratory 2 | Room 305";
+                String img = "/img/equipment/";
+
+                // Electrical Measurement and Testing
+                equipment.create(new EquipmentRequest("CATC-mlt001DM", "Digital Multimeter",
+                        "Measures voltage, current and resistance with auto-ranging.",
+                        img + "multimeter.svg", lab1, Status.AVAILABLE, 3));
+                equipment.create(new EquipmentRequest("CATC-clm001CM", "Clamp Meter",
+                        "Measures AC current without breaking the circuit.",
+                        img + "clamp-meter.svg", lab1, Status.AVAILABLE, 2));
+                equipment.create(new EquipmentRequest("CATC-osc001DO", "Digital Oscilloscope",
+                        "Displays and measures signal waveforms.",
+                        img + "oscilloscope.svg", lab1, Status.AVAILABLE, 2));
+                equipment.create(new EquipmentRequest("CATC-psu001DP", "DC Power Supply",
+                        "Adjustable bench supply for powering and testing circuits.",
+                        img + "power-supply.svg", lab2, Status.AVAILABLE, 3));
+                equipment.create(new EquipmentRequest("CATC-fgn001FG", "Function Generator",
+                        "Produces sine, square and triangle test signals.",
+                        img + "function-generator.svg", lab2, Status.AVAILABLE, 2));
+                equipment.create(new EquipmentRequest("CATC-ins001IT", "Insulation Resistance Tester",
+                        "Checks the insulation condition of wires and motors.",
+                        img + "insulation-tester.svg", lab2, Status.BORROWED, 1));
+            }
         };
     }
 }

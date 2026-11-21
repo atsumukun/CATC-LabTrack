@@ -1,11 +1,15 @@
 package ph.edu.catc.labtrack.equipment.service;
 
-import java.util.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import ph.edu.catc.labtrack.equipment.dto.*;
+import ph.edu.catc.labtrack.equipment.dto.EquipmentRequest;
+import ph.edu.catc.labtrack.equipment.dto.EquipmentResponse;
 import ph.edu.catc.labtrack.equipment.model.Equipment;
+import ph.edu.catc.labtrack.equipment.model.Status;
 import ph.edu.catc.labtrack.equipment.repository.EquipmentRepository;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EquipmentService {
@@ -14,8 +18,16 @@ public class EquipmentService {
     public EquipmentService(EquipmentRepository repository) { this.repository = repository; }
 
     public List<EquipmentResponse> list(String location) {
+        return list(location, null);
+    }
+
+    /** Lists equipment, optionally narrowed to a location text and/or a status. */
+    public List<EquipmentResponse> list(String location, Status status) {
         return repository.findByLocationContainingIgnoreCaseOrderByAssetCode(location.strip())
-            .stream().map(EquipmentResponse::from).toList();
+                .stream()
+                .filter(item -> status == null || item.getStatus() == status)
+                .map(EquipmentResponse::from)
+                .toList();
     }
 
     public Optional<EquipmentResponse> find(long id) {
@@ -23,14 +35,20 @@ public class EquipmentService {
     }
 
     public EquipmentResponse create(EquipmentRequest input) {
-        String code = input.assetCode().toUpperCase(Locale.ROOT);
-        if (repository.existsByAssetCode(code)) throw new DuplicateCodeException(code);
-        var item = new Equipment(code, input.name().strip(), input.location().strip(), input.status());
+        String code = input.assetCode().strip();
+        if (repository.existsByAssetCodeIgnoreCase(code)) throw new DuplicateCodeException(code);
+        int units = input.totalUnits() == null ? 1 : input.totalUnits();
+        var item = new Equipment(code, input.name().strip(), clean(input.description()), clean(input.imageUrl()),
+                input.location().strip(), input.status(), units);
         try {
             return EquipmentResponse.from(repository.saveAndFlush(item));
         } catch (DataIntegrityViolationException ex) {
-            if (repository.existsByAssetCode(code)) throw new DuplicateCodeException(code);
+            if (repository.existsByAssetCodeIgnoreCase(code)) throw new DuplicateCodeException(code);
             throw ex;
         }
+    }
+
+    private static String clean(String value) {
+        return value == null || value.isBlank() ? null : value.strip();
     }
 }
