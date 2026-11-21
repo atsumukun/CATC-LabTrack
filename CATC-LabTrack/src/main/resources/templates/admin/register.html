@@ -14,6 +14,20 @@
     <h1>Equipment register</h1>
     <section th:replace="~{shared/equipment :: catalog(true)}"></section>
     <section th:replace="~{shared/equipment :: create}"></section>
+    <section>
+      <h2>Reservations</h2>
+      <p th:if="${#lists.isEmpty(reservations)}">No reservations yet.</p>
+      <article th:each="r : ${reservations}">
+        <h3 th:text="${r.reference() + ' · ' + r.equipmentName()}"></h3>
+        <p th:text="${r.borrowerName() + ' · ' + r.quantity() + ' unit(s) · ' + r.useDate() + ' · ' + r.status()}"></p>
+        <form th:each="action : ${r.status().name() == 'PENDING' ? {'BORROWED','CANCELLED'} : (r.status().name() == 'BORROWED' ? {'RETURNED'} : {})}"
+              class="equipment-action" data-method="PUT"
+              th:attr="data-url=@{/api/reservations/{id}/status/{next}(id=${r.id()},next=${action})}">
+          <button th:text="${action == 'BORROWED' ? 'Confirm pickup' : (action == 'RETURNED' ? 'Record return' : 'Cancel reservation')}"></button>
+          <output role="status"></output>
+        </form>
+      </article>
+    </section>
   </main>
 </body>
 </html>

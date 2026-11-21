@@ -49,6 +49,19 @@ def verify():
     assert users[0].request("GET", detail, 200) == saved
     admin.request("GET", detail, 404)
     admin.request("DELETE", path, 409)
+    admin.request("PUT", path, 409, dict(item, status="AVAILABLE"))
+    users[0].request("PUT", detail + "/status/BORROWED", 403)
+    admin.request("PUT", detail + "/status/BORROWED", 200)
+    assert admin.request("GET", path, 200)["status"] == "BORROWED"
+    admin.request("PUT", detail + "/status/RETURNED", 200)
+    admin.request("PUT", detail + "/status/RETURNED", 409)
+    assert admin.request("GET", path, 200)["availableUnits"] == 1
+    again = users[0].request("POST", "/api/reservations", 201, request)
+    cancel = f"/api/reservations/{again['id']}/status/CANCELLED"
+    admin.request("PUT", cancel, 200)
+    admin.request("PUT", cancel, 409)
+    assert admin.request("GET", path, 200)["availableUnits"] == 1
+    print("PASS: custodian permissions, pickup, return, cancellation and status conflict.")
     print("PASS: quantity limits, competing requests for the final unit, stock and per-account history.")
 
 

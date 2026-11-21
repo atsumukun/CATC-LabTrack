@@ -26,6 +26,8 @@ public class Equipment {
     @Column(nullable = false)
     private int heldUnits;
 
+    private int borrowedUnits;
+
     protected Equipment() {}
 
     public Equipment(String assetCode, String name, String description, String imageUrl,
@@ -53,11 +55,28 @@ public class Equipment {
         }
     }
 
+    public void pickUpUnits(int quantity) {
+        borrowedUnits += quantity;
+        status = stockStatus(totalUnits);
+    }
+
+    public void releaseUnits(int quantity, boolean wasBorrowed) {
+        heldUnits -= quantity;
+        if (wasBorrowed) borrowedUnits -= quantity;
+        availableUnits += quantity;
+        status = stockStatus(totalUnits);
+    }
+
+    private Status stockStatus(int capacity) {
+        if (capacity > heldUnits) return Status.AVAILABLE;
+        return borrowedUnits == capacity ? Status.BORROWED : Status.RESERVED;
+    }
+
     public void update(String code, String name, String location, Status status, Integer total,
                        String description, String imageUrl) {
         int capacity = total == null ? totalUnits : total;
         int held = heldUnits;
-        if (held > capacity || (held > 0 && status != this.status && status != Status.AVAILABLE)) {
+        if (held > capacity || (held > 0 && status != stockStatus(capacity))) {
             throw new ph.edu.catc.labtrack.reservation.service.ReservationException(
                 "This change conflicts with held units.", org.springframework.http.HttpStatus.CONFLICT);
         }
@@ -68,7 +87,7 @@ public class Equipment {
         totalUnits = capacity;
         if (held > 0) {
             availableUnits = capacity - held;
-            this.status = availableUnits == 0 ? Status.RESERVED : Status.AVAILABLE;
+
         } else {
             availableUnits = status == Status.AVAILABLE ? capacity : 0;
         }

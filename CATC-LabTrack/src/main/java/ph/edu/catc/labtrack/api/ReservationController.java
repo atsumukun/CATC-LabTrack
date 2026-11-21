@@ -29,6 +29,12 @@ public class ReservationController {
         return ResponseEntity.created(URI.create("/api/reservations/" + saved.id())).body(saved);
     }
 
+    @org.springframework.web.bind.annotation.PutMapping("/{id}/status/{next}")
+    ReservationResponse transition(@PathVariable long id,
+            @PathVariable ph.edu.catc.labtrack.reservation.model.ReservationStatus next) {
+        return service.transition(id, next);
+    }
+
     @GetMapping("/{id}")
     ReservationResponse get(@PathVariable long id, Authentication account) {
         return service.get(id, account.getName());

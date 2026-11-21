@@ -1,12 +1,20 @@
 # CATC LabTrack
 
-**Laboratory Equipment Register Web Service · CAT College · Week 1 starter**
+**Laboratory Equipment Register Web Service · CAT College · Week 2 equipment register**
 
 A student looking for a multimeter can search by lab location, read its unique asset code and see its current status. The same register serves Computer Engineering, Electrical Engineering, Computer Science, Engineering Technology and Information Technology. Custodians and technicians use the ADMIN page. Instructors and students use the USER page.
 
 ## Run the packaged application
 
-With JDK 25 selected, open a terminal beside pom.xml, check `java -version` and run `java -jar CATC-LabTrack.jar`. Once startup completes, visit http://localhost:8080/login. Stop the process with Ctrl+C before launching a second copy in IntelliJ. The JAR contains this snapshot. After editing the sources, run the IntelliJ main class or rebuild with Maven.
+From the repository root, build the current checkout with Maven and JDK 25.
+
+```sh
+cd CATC-LabTrack
+mvn clean package
+java -jar target/labtrack-0.1.0.jar
+```
+
+Visit http://localhost:8080/login. Rebuild after editing the source.
 
 ## Start in IntelliJ IDEA
 
@@ -21,7 +29,7 @@ With JDK 25 selected, open a terminal beside pom.xml, check `java -version` and 
 | ADMIN | admin | admin-demo | /admin |
 | USER | user | user-demo | /user |
 
-Click Sign out to switch accounts. HTTP Basic is available to API clients. The server binds to the loopback address. H2 runs in memory. Stopping and restarting clears edits and recreates both accounts and two invented samples. Each saved account contains a BCrypt hash.
+Click Sign out to switch accounts. HTTP Basic is available to API clients. The server binds to the loopback address. H2 runs in memory. Stopping and restarting clears edits and recreates both accounts and six sample equipment records. Each saved account contains a BCrypt hash.
 
 **Terminal option.** From the extracted folder containing pom.xml, run `mvn -v` and confirm Java 25 and Maven 3.6.3 or later. Run `mvn spring-boot:run`. If Maven cannot find the spring-boot plugin, check that `dir pom.xml` finds this project's POM in your current folder. The IntelliJ main-method instructions work with bundled Maven. Spring Boot serves both pages and their CSS.
 
@@ -35,7 +43,7 @@ Extract the updated ZIP into a fresh folder and open its pom.xml as a project. T
 
 ## Try the first end-to-end feature
 
-Open the USER page and search for **Electrical**. The seeded multimeter appears. Clear the search, open **Register a new item**, and enter **ee-002**, **Clamp meter**, **Electrical Engineering Lab**, **AVAILABLE**. Save, then search again. The new row displays **EE-002**. Repeating the code should display a duplicate warning. With USER credentials, opening **/admin** should produce 403. The ADMIN page has its own template and uses the same table and create form. The course grants creation rights to both roles.
+On the USER dashboard, reserve a free unit and record its reference. Sign in as ADMIN, find the reference in Reservations, confirm pickup and record the return. Cancelling a pending request also releases its units.
 
 ## Architecture design
 
@@ -62,7 +70,7 @@ flowchart TD
 | equipment | id (generated key), asset_code (unique item tag), name, location (lab or room), status (AVAILABLE, RESERVED or BORROWED) |
 | app_user | username (key), password_hash, role (USER or ADMIN) |
 
-**Borrowing scope.** Status describes an individual asset. For Week 2, changing AVAILABLE to RESERVED or BORROWED will update that existing asset through PUT. Borrower identity, due dates, approval and loan history would need a separate workflow. The starter creates records and displays their current status.
+A reservation holds units until an administrator cancels the pending request or records the return after pickup. Equipment with free units is AVAILABLE. Fully held equipment is BORROWED when every unit has been picked up and RESERVED otherwise.
 
 ## Five-member ownership
 
@@ -78,20 +86,14 @@ Paths beginning with **J/** below are relative to **src/main/java/ph/edu/catc/la
 
 **Working agreement.** Assign one feature branch per member. Members 2 and 3 agree on method signatures before implementing writes. Members 4 and 5 agree on shared form fields and error messages before changing templates. The leader reviews merges. Each member supplies their own test evidence and explains one request through the layers.
 
-## API contract and milestones
+## API verification
 
-| Operation | Allowed roles | Week 1 starter | Next checkpoint |
-|---|---|---|---|
-| GET /api/equipment?location=Electrical | USER, ADMIN | 200, case-insensitive partial location filter; omit parameter for all | Retest after edits |
-| GET /api/equipment/{id} | USER, ADMIN | 200 or 404 | Add a helpful missing-record message |
-| POST /api/equipment | USER, ADMIN | 201, 400 validation, 409 duplicate | Retest both roles |
-| GET /api/csrf | USER, ADMIN | Returns token and request header name | Reuse with the same account and session cookie |
-| PUT /api/equipment/{id} | USER, ADMIN | Planned | 200, 400, 404 or 409 |
-| DELETE /api/equipment/{id} | ADMIN | Security rule configured; handler planned | 204, 404, or 403 for USER with valid token |
+Both roles can list, retrieve, create and update equipment. Only ADMIN can delete equipment and transition reservations. All writes require a valid CSRF token. Run these from the module folder with a freshly started application.
 
-**Week 1** — Add names, confirm scope with your instructor, run the first create/read path and explain the diagram.
-
-**Week 2** — Finish update/delete, duplicate-on-update handling, status editing and the remaining error cases.
+```sh
+python docs/verify_api.py
+python docs/verify_reservations.py
+```
 
 **Week 3** — Execute the guide's ten checks, save actual responses, finish the editable and PDF write-up, and rehearse individual explanations. Use a fourth week for fixes if available.
 
