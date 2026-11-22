@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My profile · CATC LabTrack</title>
+    <link rel="icon" th:href="@{/img/catc-logo.png}">
+    <link rel="stylesheet" th:href="@{/css/user-dashboard.css}">
+</head>
+<body>
+<header th:replace="~{user/fragments :: topbar('profile')}"></header>
+
+<section class="hero">
+    <div class="hero-inner">
+        <div>
+            <p class="hero-kicker">Student record</p>
+            <h1>My profile</h1>
+            <p>Your school details as recorded by the laboratory custodian.</p>
+        </div>
+        <a class="btn btn-light" th:href="@{/user}">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+            Back to lab equipment
+        </a>
+    </div>
+</section>
+
+<main class="profile-layout">
+
+    <div class="banner" th:if="${profile == null}" role="status">
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg>
+        <div><strong>Your profile isn't set up yet.</strong> Please see the laboratory custodian to add your school details.</div>
+    </div>
+
+    <!-- ID card -->
+    <aside class="id-card" th:if="${profile != null}" aria-label="Student ID card">
+        <div class="id-top">
+            <span class="logo-badge"><img th:src="@{/img/catc-logo.png}" alt="CATC logo" width="28" height="28"></span>
+            <div><strong>CATC</strong><span>Computer Arts and Technological College, Inc.</span></div>
+        </div>
+
+        <div class="avatar">
+            <img th:if="${profile.photoUrl() != null}" th:src="@{${profile.photoUrl()}}" th:alt="${'Photo of ' + profile.fullName()}">
+            <span th:if="${profile.photoUrl() == null}" class="initials" th:text="${profile.initials()}">UD</span>
+            <span class="cam" title="Photo slot">
+         <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+       </span>
+        </div>
+
+        <h2 th:text="${profile.fullName()}">User N. Demo</h2>
+        <p class="program" th:text="${profile.program()}">Program</p>
+        <span class="role-chip">Student</span>
+
+        <div class="id-foot">
+            <span class="id-no" th:text="${profile.studentId()}">S240000</span>
+            <span class="barcode" aria-hidden="true"></span>
+        </div>
+    </aside>
+
+    <!-- Details -->
+    <section class="card" th:if="${profile != null}" aria-labelledby="details-title">
+        <div class="card-head">
+            <h2 id="details-title">School details</h2>
+            <span class="lock-note"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> Read-only</span>
+        </div>
+        <p class="muted profile-note">These records are maintained by the laboratory custodian. To correct something, please visit the custodian's office.</p>
+
+        <ul class="info-list">
+            <li>
+                <span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.5 1.8-2 3-2s2.4.5 3 2M14 10h4M14 14h3"/></svg></span>
+                <div><span class="k">Student ID</span><span class="v" th:text="${profile.studentId()}">S240000</span></div>
+            </li>
+            <li>
+                <span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+                <div><span class="k">Full name</span><span class="v" th:text="${profile.fullName()}">User N. Demo</span></div>
+            </li>
+            <li>
+                <span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></span>
+                <div><span class="k">Contact number</span><span class="v" th:text="${profile.contactNumber()}">01234567891</span></div>
+            </li>
+            <li>
+                <span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
+                <div><span class="k">Email</span><span class="v" th:text="${profile.email()}">user@gmail.com</span></div>
+            </li>
+            <li>
+                <span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/></svg></span>
+                <div><span class="k">Program</span><span class="v" th:text="${profile.program()}">Program</span></div>
+            </li>
+            <li>
+                <span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg></span>
+                <div><span class="k">Year level</span><span class="v" th:text="${profile.yearLevel()}">Year 3</span></div>
+            </li>
+        </ul>
+
+        <div class="profile-actions">
+            <a class="btn btn-primary" th:href="@{/user}">
+                <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+                Back to lab equipment
+            </a>
+            <a class="btn btn-secondary" th:href="@{/user/reservations}">My reservations</a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

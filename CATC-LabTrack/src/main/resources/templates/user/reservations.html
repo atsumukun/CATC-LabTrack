@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My reservations · CATC LabTrack</title>
+    <link rel="icon" th:href="@{/img/catc-logo.png}">
+    <link rel="stylesheet" th:href="@{/css/user-dashboard.css}">
+</head>
+<body>
+<header th:replace="~{user/fragments :: topbar('reservations')}"></header>
+
+<section class="hero">
+    <div class="hero-inner">
+        <div>
+            <p class="hero-kicker">Your requests</p>
+            <h1>My reservations</h1>
+            <p>Follow each request from pending to borrowed to returned.</p>
+        </div>
+        <ul class="stats" aria-label="Summary">
+            <li><b th:text="${pendingCount}">0</b><span>Pending</span></li>
+            <li><b th:text="${borrowedCount}">0</b><span>Borrowed</span></li>
+            <li><b th:text="${returnedCount}">0</b><span>Returned</span></li>
+        </ul>
+    </div>
+</section>
+
+<main>
+    <div class="policy policy-wide" role="note">
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg>
+        <div>
+            <strong>Borrowing rules</strong>
+            <ul>
+                <li>Return equipment <b><span th:text="${returnDays}">3</span> days</b> after the borrow date.</li>
+                <li>Late returns are charged <b>&#8369;<span th:text="${lateFine}">10</span></b> for each day of delay.</li>
+                <li>Damaged items will be charged a fine.</li>
+            </ul>
+        </div>
+    </div>
+
+    <section class="card" aria-labelledby="mine-title">
+        <div class="card-head">
+            <h2 id="mine-title">Reservation history</h2>
+            <a class="btn btn-secondary" th:href="@{/user}">Reserve more equipment</a>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(reservations)}">
+            <span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 13l2 2 4-4"/></svg></span>
+            <strong>No reservations yet</strong>
+            <p class="muted">When you reserve equipment it will show up here as <b>Pending</b> until the custodian confirms it.</p>
+            <a class="btn btn-primary" th:href="@{/user}">Browse equipment</a>
+        </div>
+
+        <div class="scroll" th:unless="${#lists.isEmpty(reservations)}">
+            <table class="compact">
+                <thead><tr><th>Reference</th><th>Equipment</th><th>Qty</th><th>Borrow date</th><th>Return by</th><th>Status</th></tr></thead>
+                <tbody>
+                <tr th:each="r : ${reservations}">
+                    <td data-label="Reference"><span class="code" th:text="${r.reference()}">RSV-00001</span></td>
+                    <td data-label="Equipment">
+                        <strong th:text="${r.equipmentName()}">Digital Multimeter</strong>
+                        <span class="muted" th:text="${r.assetCode()}">CODE</span><br>
+                        <small class="muted" th:text="${'Subject: ' + r.subject() + ' | Instructor: ' + r.instructorName()}">Subject</small>
+                    </td>
+                    <td data-label="Qty" th:text="${r.quantity()}">1</td>
+                    <td data-label="Borrow date" th:text="${#temporals.format(r.useDate(), 'MMM d, yyyy')}">Nov 21, 2026</td>
+                    <td data-label="Return by"><b th:text="${#temporals.format(r.returnDate(), 'MMM d, yyyy')}">Nov 24, 2026</b></td>
+                    <td data-label="Status"><span th:class="${'badge badge-r-' + r.status().name().toLowerCase()}" th:text="${r.status()}">PENDING</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>

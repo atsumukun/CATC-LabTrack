@@ -20,7 +20,7 @@ public class SecurityConfig {
         basic.afterPropertiesSet();
         return http.authorizeHttpRequests(auth -> auth
                 .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
-                .requestMatchers("/login", "/css/login.css").permitAll()
+                .requestMatchers("/login", "/css/login.css", "/img/catc-logo.png").permitAll()
                 .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/reservations/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/equipment/**").hasRole("ADMIN")

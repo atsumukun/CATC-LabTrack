@@ -1,21 +1,41 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Equipment register · CATC LabTrack</title>
-  <link rel="stylesheet" href="/css/register.css">
-  <script src="/js/register.js" defer></script>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Equipment register · CATC LabTrack</title>
+    <link rel="icon" th:href="@{/img/catc-logo.png}">
+    <link rel="stylesheet" th:href="@{/css/user-dashboard.css}">
+    <script src="/js/register.js" defer></script>
 </head>
 <body>
-  <header><strong>CATC LabTrack</strong><span>Custodian workspace</span>
-    <form th:action="@{/logout}" method="post"><button type="submit">Sign out</button></form>
-  </header>
-  <main>
-    <h1>Equipment register</h1>
+<header class="topbar">
+    <div class="brand">
+        <span class="logo-badge"><img th:src="@{/img/catc-logo.png}" alt="CATC logo" width="34" height="34"></span>
+        <div><strong>CATC LabTrack</strong><span>Computer Arts and Technological College, Inc.</span></div>
+    </div>
+    <div class="account">
+        <span class="pill">Custodian workspace</span>
+        <form th:action="@{/logout}" method="post"><button type="submit" class="btn btn-ghost">Sign out</button></form>
+    </div>
+</header>
+
+<section class="hero">
+    <div class="hero-inner">
+        <div>
+            <p class="hero-kicker">Custodian workspace</p>
+            <h1>Equipment register</h1>
+            <p>View the laboratory inventory and register new equipment.</p>
+        </div>
+        <ul class="stats" aria-label="Summary">
+            <li><b th:text="${#lists.size(items)}">0</b><span>Equipment shown</span></li>
+        </ul>
+    </div>
+</section>
+
+<main>
     <section th:replace="~{shared/equipment :: catalog(true)}"></section>
     <section th:replace="~{shared/equipment :: create}"></section>
-    <section>
-      <h2>Reservations</h2>
+<section class="card"><div class="card-head"><h2>Reservations</h2></div><div class="form-pad">
       <p th:if="${#lists.isEmpty(reservations)}">No reservations yet.</p>
       <article th:each="r : ${reservations}">
         <h3 th:text="${r.reference() + ' · ' + r.equipmentName()}"></h3>
@@ -27,7 +47,7 @@
           <output role="status"></output>
         </form>
       </article>
-    </section>
-  </main>
+    </div></section>
+</main>
 </body>
 </html>

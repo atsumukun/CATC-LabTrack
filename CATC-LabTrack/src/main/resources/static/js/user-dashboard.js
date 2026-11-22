@@ -6,9 +6,28 @@
     const csrfToken = body.dataset.csrfToken;
     const reserveUrl = body.dataset.reserveUrl || '/api/reservations';
     const MAX_QTY = Number(body.dataset.maxQty) || 3;
+    const RETURN_DAYS = Number(body.dataset.returnDays) || 3;
 
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+
+    /* ---------- Date helpers (all date-only, no time zones involved) ---------- */
+    const pad = (n) => String(n).padStart(2, '0');
+    const toISO = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const parseISO = (iso) => new Date(`${iso}T00:00:00`);
+    const todayISO = () => toISO(new Date());
+    function addDays(iso, days) {
+        const d = parseISO(iso);
+        d.setDate(d.getDate() + days);
+        return toISO(d);
+    }
+    function pretty(iso, withWeekday = false) {
+        const d = parseISO(iso);
+        if (Number.isNaN(d.getTime())) return iso;
+        return d.toLocaleDateString(undefined, {
+            weekday: withWeekday ? 'long' : undefined, year: 'numeric', month: 'long', day: 'numeric',
+        });
+    }
 
     /* ---------- Live search over the rows already on the page ---------- */
     const search = $('#search');
@@ -20,7 +39,7 @@
         const q = search.value.trim().toLowerCase();
         let shown = 0;
         rows.forEach((row) => {
-            const match = !q || [row.dataset.code, row.dataset.name, row.dataset.location].some(value => value.toLowerCase().includes(q));
+            const match = !q || row.textContent.toLowerCase().includes(q);
             row.hidden = !match;
             if (match) shown++;
         });
@@ -48,21 +67,26 @@
     const qtyPlus = $('#qty-plus');
     const qtyHint = $('#qty-hint');
     const reviewList = $('#review-list');
+    const returnHint = $('#return-hint span');
+    const agree = $('#agree');
+
+    // The student's own details, rendered by the server from their profile.
+    const profile = {
+        name: dialog.dataset.profileName,
+        id: dialog.dataset.profileId,
+        program: dialog.dataset.profileProgram,
+        year: dialog.dataset.profileYear,
+    };
 
     const state = { step: 1, qty: 1, max: 1, item: null, busy: false, stale: false };
     const NEXT_LABEL = { 1: 'Continue', 2: 'Review', 3: 'Confirm reservation' };
 
-    function todayISO() {
-        const d = new Date();
-        const pad = (n) => String(n).padStart(2, '0');
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-    }
-
-    function prettyDate(iso) {
-        const d = new Date(`${iso}T00:00:00`);
-        return Number.isNaN(d.getTime())
-            ? iso
-            : d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    function setThumb(img, src, letter) {
+        img.classList.remove('broken');
+        img.parentElement.dataset.letter = letter;
+        img.onerror = () => img.classList.add('broken');
+        if (src) img.src = src;
+        else { img.removeAttribute('src'); img.classList.add('broken'); }
     }
 
     function showError(message) {
@@ -75,6 +99,11 @@
         errorBox.textContent = '';
     }
 
+    // The button stays off while sending, and on the last step until the box is ticked.
+    function syncNext() {
+        nextBtn.disabled = state.busy || (state.step === 3 && !agree.checked);
+    }
+
     function renderQuantity() {
         qtyValue.textContent = String(state.qty);
         qtyMinus.disabled = state.qty <= 1;
@@ -83,6 +112,13 @@
         qtyHint.textContent = free < MAX_QTY
             ? `Only ${free} ${free === 1 ? 'unit is' : 'units are'} free right now.`
             : `${free} of ${state.item.total} units free. Maximum of ${MAX_QTY} per request.`;
+    }
+
+    function updateReturnHint() {
+        const value = form.elements.useDate.value;
+        returnHint.textContent = value
+            ? `Return by ${pretty(addDays(value, RETURN_DAYS), true)} (${RETURN_DAYS} days after you borrow).`
+            : 'Pick a borrow date to see your return date.';
     }
 
     function showStep(step) {
@@ -97,19 +133,31 @@
         backBtn.hidden = step === 1;
         nextBtn.textContent = NEXT_LABEL[step];
         hideError();
+        syncNext();
     }
 
     function renderReview() {
         const v = Object.fromEntries(new FormData(form).entries());
+        const borrow = v.useDate;
+        const due = addDays(borrow, RETURN_DAYS);
+
+        setThumb($('#c-img'), state.item.image, state.item.name.charAt(0).toUpperCase());
+        $('#c-name').textContent = state.item.name;
+        $('#c-desc').textContent = state.item.description;
+        $('#c-code').textContent = state.item.code;
+        $('#c-loc').textContent = state.item.location;
+        $('#c-qty').textContent = `× ${state.qty}`;
+        $('#c-borrow').textContent = pretty(borrow, true);
+        $('#c-return').textContent = pretty(due, true);
+        $('#c-return-note').textContent = `${RETURN_DAYS} days after borrowing`;
+
         const entries = [
-            ['Equipment', `${state.item.name} (${state.item.code})`],
-            ['Location', state.item.location],
-            ['Quantity', String(state.qty)],
-            ['Name', v.borrowerName.trim()],
-            ['Year level', v.yearLevel],
-            ['Course', v.course.trim()],
+            ['Borrower', profile.name],
+            ['Student ID', profile.id],
+            ['Program', profile.program],
+            ['Year level', profile.year],
+            ['Instructor', v.instructorName.trim()],
             ['Subject to use', v.subject.trim()],
-            ['Date of use', prettyDate(v.useDate)],
         ];
         const nodes = [];
         entries.forEach(([label, value]) => {
@@ -129,7 +177,9 @@
             id: Number(row.dataset.id),
             code: row.dataset.code,
             name: row.dataset.name,
+            description: row.dataset.description || '',
             location: row.dataset.location,
+            image: img ? img.getAttribute('src') : '',
             available,
             total: Number(row.dataset.total),
         };
@@ -141,13 +191,12 @@
         const date = form.elements.useDate;
         date.min = todayISO();
         date.value = todayISO();
+        updateReturnHint();
 
         $('#dlg-title').textContent = state.item.name;
         $('#dlg-code').textContent = state.item.code;
         $('#dlg-location').textContent = state.item.location;
-        const preview = $('#dlg-image');
-        preview.hidden = !img;
-        if (img) preview.src = img.src; else preview.removeAttribute('src');
+        setThumb($('#dlg-image'), state.item.image, state.item.name.charAt(0).toUpperCase());
 
         renderQuantity();
         showStep(1);
@@ -156,9 +205,9 @@
 
     function setBusy(busy) {
         state.busy = busy;
-        nextBtn.disabled = busy;
         backBtn.disabled = busy;
         nextBtn.textContent = busy ? 'Reserving…' : NEXT_LABEL[state.step];
+        syncNext();
     }
 
     async function submitReservation() {
@@ -166,9 +215,7 @@
         const payload = {
             equipmentId: state.item.id,
             quantity: state.qty,
-            borrowerName: v.borrowerName.trim(),
-            yearLevel: v.yearLevel,
-            course: v.course.trim(),
+            instructorName: v.instructorName.trim(),
             subject: v.subject.trim(),
             useDate: v.useDate,
         };
@@ -188,8 +235,7 @@
             });
 
             if (response.ok) {
-                const saved = await response.json();
-                showSuccess(saved);
+                showSuccess(await response.json());
                 return;
             }
 
@@ -214,8 +260,9 @@
 
     function showSuccess(saved) {
         $('#success-ref').textContent = saved.reference;
-        $('#success-summary').textContent =
-            `${saved.quantity} × ${saved.equipmentName} for ${prettyDate(saved.useDate)}.`;
+        $('#success-summary').textContent = `${saved.quantity} × ${saved.equipmentName}`;
+        $('#success-borrow').textContent = pretty(saved.useDate);
+        $('#success-return').textContent = pretty(saved.returnDate, true);
         state.stale = false;
         dialog.close();
         successDialog.showModal();
@@ -235,6 +282,8 @@
         if (state.qty < state.max) { state.qty++; renderQuantity(); }
     });
 
+    form.elements.useDate.addEventListener('input', updateReturnHint);
+    agree.addEventListener('change', syncNext);
     dialog.addEventListener('cancel', event => { if (state.busy) event.preventDefault(); });
     backBtn.addEventListener('click', () => showStep(Math.max(1, state.step - 1)));
 
@@ -248,6 +297,7 @@
             showStep(3);
             return;
         }
+        if (!agree.checked) return;
         submitReservation();
     });
 
@@ -261,7 +311,7 @@
         });
     });
 
-    // After a successful booking, or a stock conflict, reload so the list shows the real numbers.
+    // After a booking, or a stock conflict, reload so the list shows the real numbers.
     dialog.addEventListener('close', () => { if (state.stale) window.location.reload(); });
     successDialog.addEventListener('close', () => window.location.reload());
 })();

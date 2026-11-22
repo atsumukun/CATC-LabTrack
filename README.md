@@ -43,7 +43,7 @@ Extract the updated ZIP into a fresh folder and open its pom.xml as a project. T
 
 ## Try the first end-to-end feature
 
-On the USER dashboard, reserve a free unit and record its reference. Sign in as ADMIN, find the reference in Reservations, confirm pickup and record the return. Cancelling a pending request also releases its units.
+On the USER dashboard, open **My Profile** to check the seeded student identity. Choose an available item, enter the instructor, subject and borrow date, review the return date and accept the displayed terms. After confirming, open **My Reservations** to find the reference and status. The return date is three days after the borrow date. The late-fee text is informational. Sign in as ADMIN, find the reference in Reservations, confirm pickup and record the return. Cancelling a pending request also releases its units.
 
 ## Architecture design
 
