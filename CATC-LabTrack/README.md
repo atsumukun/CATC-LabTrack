@@ -1,6 +1,6 @@
 # CATC LabTrack
 
-**Laboratory Equipment Register Web Service · CAT College · Week 2 equipment register**
+**Laboratory Equipment Register Web Service · CAT College · Week 3 integration and verification**
 
 A student looking for a multimeter can search by lab location, read its unique asset code and see its current status. The same register serves Computer Engineering, Electrical Engineering, Computer Science, Engineering Technology and Information Technology. Custodians and technicians use the ADMIN page. Instructors and students use the USER page.
 
@@ -63,7 +63,7 @@ flowchart TD
     J --> H
 ```
 
-**Example request.** A student submits the register form. The form script sends JSON and the session's CSRF token to POST /api/equipment. Spring Security checks the credentials and token. EquipmentController validates EquipmentRequest. Spring injects EquipmentService into the controller through its constructor. The service normalizes the code, checks uniqueness and asks EquipmentRepository to save it. H2 also enforces uniqueness. The controller returns 201, a Location header and an EquipmentResponse. The browser reloads the register.
+**Example request.** An authenticated API client sends JSON and its session’s CSRF token to POST /api/equipment. Spring Security checks the credentials and token. EquipmentController validates EquipmentRequest. Spring injects EquipmentService into the controller through its constructor. The service normalizes the code, checks uniqueness and asks EquipmentRepository to save it. H2 also enforces uniqueness. The controller returns 201, a Location header and an EquipmentResponse. The client can retrieve the generated ID in a separate GET.
 
 | Table | Fields and meaning |
 |---|---|
@@ -95,7 +95,7 @@ python docs/verify_api.py
 python docs/verify_reservations.py
 ```
 
-**Week 3** — Execute the guide's ten checks, save actual responses, finish the editable and PDF write-up, and rehearse individual explanations. Use a fourth week for fixes if available.
+**Week 3 materials.** See [report, saved responses and five-member rehearsal notes](docs/week3/). To capture a fresh run, start the application with a clean in-memory database and run `python docs/verify_api.py http://127.0.0.1:8080 --evidence` from the Maven module. Use a fourth week for fixes if available.
 
 **AI-use note.** ChatGPT assisted with this starter, its architecture and the suggested division of work. Each member should record the changes they make and the checks they personally run before submission.
 

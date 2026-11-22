@@ -37,7 +37,12 @@ class Client:
             if actual != expected:
                 raise AssertionError(f"{method} {path}: expected {expected}, got {actual}: {raw!r}")
             print(f"  {method} {path} — expected {expected}, got {actual}", flush=True)
-            return json.loads(raw) if raw else None
+            result = json.loads(raw) if raw else None
+            if path != "/api/csrf" and "--evidence" in sys.argv:
+                if body is not None:
+                    print("    Request body:", json.dumps(body))
+                print("    Response body:", json.dumps(result) if raw else "(empty)")
+            return result
 
     def csrf(self):
         response = self.request("GET", "/api/csrf", 200)
