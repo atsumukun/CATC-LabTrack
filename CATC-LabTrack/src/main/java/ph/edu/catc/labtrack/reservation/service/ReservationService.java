@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ph.edu.catc.labtrack.equipment.repository.EquipmentRepository;
+import ph.edu.catc.labtrack.profile.ProfileService;
 import ph.edu.catc.labtrack.reservation.dto.ReservationRequest;
 import ph.edu.catc.labtrack.reservation.dto.ReservationResponse;
 import ph.edu.catc.labtrack.reservation.model.Reservation;
@@ -16,17 +17,27 @@ import ph.edu.catc.labtrack.reservation.model.ReservationStatus;
 public class ReservationService {
     /** Most units one person can reserve in a single request. */
     public static final int MAX_PER_REQUEST = 3;
+    /** Equipment must be returned this many days after the borrow date. */
+    public static final int RETURN_DAYS = 3;
+    /** Fine in pesos for each day an item is returned late. */
+    public static final int LATE_FINE_PER_DAY = 10;
 
     private final ReservationRepository reservations;
     private final EquipmentRepository equipment;
+    private final ProfileService profiles;
 
-    public ReservationService(ReservationRepository reservations, EquipmentRepository equipment) {
+    public ReservationService(ReservationRepository reservations, EquipmentRepository equipment,
+                              ProfileService profiles) {
         this.reservations = reservations;
         this.equipment = equipment;
+        this.profiles = profiles;
     }
 
     @Transactional
     public ReservationResponse reserve(ReservationRequest input, String username) {
+        var profile = profiles.find(username).orElseThrow(() -> new ReservationException(
+                "Your student profile isn't set up yet. Please see the laboratory custodian.", HttpStatus.CONFLICT));
+
         var item = equipment.findForUpdate(input.equipmentId())
                 .orElseThrow(() -> new ReservationException("That equipment no longer exists.", HttpStatus.NOT_FOUND));
 
@@ -40,9 +51,9 @@ public class ReservationService {
         }
 
         item.reserveUnits(input.quantity());
-        var saved = reservations.save(new Reservation(item, input.quantity(), input.borrowerName().strip(),
-                input.yearLevel().strip(), input.course().strip(), input.subject().strip(),
-                input.useDate(), username));
+        var saved = reservations.save(new Reservation(item, input.quantity(), profile.fullName(),
+                profile.studentId(), profile.yearLevel(), profile.program(), input.instructorName() == null ? "Unspecified" : input.instructorName().strip(),
+                input.subject().strip(), input.useDate(), input.useDate().plusDays(RETURN_DAYS), username));
         return ReservationResponse.from(saved);
     }
 

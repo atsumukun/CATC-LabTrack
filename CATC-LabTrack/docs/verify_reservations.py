@@ -56,7 +56,11 @@ def verify():
     admin.request("PUT", detail + "/status/RETURNED", 200)
     admin.request("PUT", detail + "/status/RETURNED", 409)
     assert admin.request("GET", path, 200)["availableUnits"] == 1
-    again = users[0].request("POST", "/api/reservations", 201, request)
+    again = users[0].request("POST", "/api/reservations", 201, dict(request, instructorName="Demo Instructor"))
+    assert again["instructorName"] == "Demo Instructor"
+    assert again["borrowerName"] == "User N. Demo"
+    assert again["course"] == again["program"]
+    assert date.fromisoformat(again["returnDate"]) == date.fromisoformat(request["useDate"]) + timedelta(days=3)
     cancel = f"/api/reservations/{again['id']}/status/CANCELLED"
     admin.request("PUT", cancel, 200)
     admin.request("PUT", cancel, 409)

@@ -1,5 +1,7 @@
 package ph.edu.catc.labtrack.setup;
 
+
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,11 +10,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import ph.edu.catc.labtrack.equipment.dto.EquipmentRequest;
 import ph.edu.catc.labtrack.equipment.model.Status;
 import ph.edu.catc.labtrack.equipment.service.EquipmentService;
+import ph.edu.catc.labtrack.profile.ProfileService;
+
 
 @Configuration
 public class DemoData {
     @Bean
-    CommandLineRunner seed(JdbcTemplate jdbc, BCryptPasswordEncoder encoder, EquipmentService equipment) {
+    CommandLineRunner seed(JdbcTemplate jdbc, BCryptPasswordEncoder encoder, EquipmentService equipment, ProfileService profiles) {
         return args -> {
             // Seed only when empty, so restarting against a saved database doesn't fail on duplicates.
             Integer accounts = jdbc.queryForObject("select count(*) from app_user", Integer.class);
@@ -46,6 +50,14 @@ public class DemoData {
                 equipment.create(new EquipmentRequest("CATC-ins001IT", "Insulation Resistance Tester",
                         "Checks the insulation condition of wires and motors.",
                         null, lab2, Status.BORROWED, 1));
+            }
+            if (!profiles.exists("user")) {
+                profiles.create("user", "S240000", "User N. Demo", "01234567891", "user@gmail.com",
+                        "Bachelor of Science in Computer Engineering", "Year 3", null);
+            }
+            if (!profiles.exists("admin")) {
+                profiles.create("admin", "EMP-0001", "Admin Custodian", "01234567890", "admin@gmail.com",
+                        "Laboratory Custodian", "Staff", null);
             }
         };
     }

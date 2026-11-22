@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<header th:fragment="topbar(active)" class="topbar">
+    <div class="brand">
+        <span class="logo-badge"><img th:src="@{/img/catc-logo.png}" alt="CATC logo" width="34" height="34"></span>
+        <div><strong>CATC LabTrack</strong><span>Computer Arts and Technological College, Inc.</span></div>
+    </div>
+
+    <nav class="tabs" aria-label="Main">
+        <a th:href="@{/user}" th:classappend="${active == 'equipment'} ? 'active'"
+           th:attr="aria-current=${active == 'equipment'} ? 'page'">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            <span>Equipment</span>
+        </a>
+        <a th:href="@{/user/reservations}" th:classappend="${active == 'reservations'} ? 'active'"
+           th:attr="aria-current=${active == 'reservations'} ? 'page'">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 13l2 2 4-4"/></svg>
+            <span>My Reservations</span>
+        </a>
+        <a th:href="@{/user/profile}" th:classappend="${active == 'profile'} ? 'active'"
+           th:attr="aria-current=${active == 'profile'} ? 'page'">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+            <span>My Profile</span>
+        </a>
+        <a th:href="@{/user/manage}" th:classappend="${active == 'manage'} ? 'active'">Equipment register</a>
+    </nav>
+
+    <div class="account">
+        <span>Signed in as <b th:text="${username}">user</b></span>
+        <form th:action="@{/logout}" method="post"><button type="submit" class="btn btn-ghost">Sign out</button></form>
+    </div>
+</header>
+
+</body>
+</html>
