@@ -100,3 +100,14 @@ python docs/verify_reservations.py
 **AI-use note.** ChatGPT assisted with this starter, its architecture and the suggested division of work. Each member should record the changes they make and the checks they personally run before submission.
 
 For a repeatable create, fetch and filter demonstration on Windows, open PowerShell in the project root while Spring Boot is running and run `.\docs\try-api.ps1`. It fetches a CSRF token, retains the session cookie and uses a fresh asset code on each run.
+
+## File I/O activity
+
+From the repository root, run the standalone classroom exercise with JDK 25.
+
+```sh
+cd activities/file-io
+java src/FileIOActivity.java
+```
+
+It creates or replaces `SD1.txt` in the current directory with the text `File was successfully created.`. LabTrack itself uses H2 for its equipment and reservation records.
