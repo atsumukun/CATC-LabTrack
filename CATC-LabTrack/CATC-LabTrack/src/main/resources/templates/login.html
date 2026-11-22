@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · CATC LabTrack</title>
+  <link rel="icon" th:href="@{/img/catc-logo.png}">
+  <link rel="stylesheet" th:href="@{/css/login.css}">
+</head>
+<body>
+<main class="split">
+
+  <section class="brand-panel" aria-label="About CATC LabTrack">
+    <div class="brand-top">
+      <span class="logo-badge"><img th:src="@{/img/catc-logo.png}" alt="CATC logo" width="52" height="52"></span>
+      <span class="school">Computer Arts and Technological College, Inc.</span>
+    </div>
+
+    <div class="brand-copy">
+      <p class="kicker">Laboratory equipment system</p>
+      <h1>CATC <span>LabTrack</span></h1>
+      <p class="lead">Welcome! Find the laboratory tools you need, reserve them in a few taps, and keep track of every request, all in one place.</p>
+
+      <ul class="points">
+        <li>
+          <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></svg></span>
+          <div><strong>Browse the equipment list</strong><span>See what is available, where it is kept and how many units are free.</span></div>
+        </li>
+        <li>
+          <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 12l2 2 4-4"/></svg></span>
+          <div><strong>Reserve in minutes</strong><span>Choose up to 3 units, fill in your details and confirm.</span></div>
+        </li>
+        <li>
+          <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          <div><strong>Track every request</strong><span>Follow your reservation from pending to borrowed to returned.</span></div>
+        </li>
+      </ul>
+    </div>
+
+    <p class="brand-foot">&copy; Computer Arts and Technological College, Inc.</p>
+  </section>
+
+  <section class="form-panel" aria-labelledby="title">
+    <div class="form-card">
+      <p class="eyebrow">Sign in</p>
+      <h2 id="title">Welcome back</h2>
+      <p class="sub">Access the laboratory equipment register.</p>
+
+      <p th:if="${param.error}" class="error" role="alert">Username or password is incorrect. Try again.</p>
+      <p th:if="${param.logout}" class="notice" role="status">You’re signed out.</p>
+
+      <form th:action="@{/login}" method="post">
+        <label for="username">Username</label>
+        <input id="username" name="username" autocomplete="username" required autofocus>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <button type="submit">Sign in</button>
+      </form>
+
+      <p class="help">Need an account? Ask the laboratory custodian.</p>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

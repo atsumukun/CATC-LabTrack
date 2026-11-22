@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Equipment register · CATC LabTrack</title>
+    <link rel="icon" th:href="@{/img/catc-logo.png}">
+    <link rel="stylesheet" th:href="@{/css/user-dashboard.css}">
+    <script src="/js/register.js" defer></script>
+</head>
+<body>
+<header th:replace="~{user/fragments :: topbar('manage')}"></header>
+<section class="hero">
+    <div class="hero-inner">
+        <div>
+            <p class="hero-kicker">Student workspace</p>
+            <h1>Equipment register</h1>
+            <p>View the laboratory inventory and register new equipment.</p>
+        </div>
+        <ul class="stats" aria-label="Summary">
+            <li><b th:text="${#lists.size(items)}">0</b><span>Equipment shown</span></li>
+        </ul>
+    </div>
+</section>
+
+<main>
+    <section th:replace="~{shared/equipment :: catalog(false)}"></section>
+    <section th:replace="~{shared/equipment :: create}"></section>
+</main>
+</body>
+</html>

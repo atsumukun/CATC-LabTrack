@@ -1,0 +1,20 @@
+:root { font: 16px/1.5 "Segoe UI", sans-serif; color: #18372f; background: #f5f7f3; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+header { background: #10483f; color: white; padding: 1rem 5vw; display: flex; gap: 1rem; flex-wrap: wrap; align-items: baseline; }
+header strong { font-size: 1.4rem; }
+main { max-width: 66rem; padding: 1.5rem; margin: auto; }
+h1 { font: bold clamp(2rem, 5vw, 3.2rem)/1.1 Georgia, serif; }
+section { padding: clamp(1rem, 3vw, 2rem); background: white; border: 1px solid #ccd8cf; margin: 1rem 0; border-radius: .75rem; }
+form { display: grid; gap: 1rem; margin: 1rem 0; }
+.filter { display: flex; align-items: end; flex-wrap: wrap; }
+label { display: grid; gap: .25rem; font-weight: 600; }
+input, select, button { font: inherit; border-radius: .4rem; padding: .55rem .8rem; border: 1px solid #789289; }
+button { background: #145949; color: white; cursor: pointer; justify-self: start; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; }
+caption, td, th { text-align: left; padding: .75rem; }
+caption { font-weight: 650; }
+th { background: #edf3ee; }
+td { border-bottom: 1px solid #d4ded7; }
+summary { cursor: pointer; font-weight: 650; }
