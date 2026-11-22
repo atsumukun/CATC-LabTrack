@@ -1,0 +1,25 @@
+  GET /api/csrf — expected 200, got 200
+  GET /api/csrf — expected 200, got 200
+  GET /api/csrf — expected 200, got 200
+  POST /api/equipment — expected 201, got 201
+  POST /api/reservations — expected 400, got 400
+  POST /api/reservations — expected 400, got 400
+  GET /api/equipment/11 — expected 200, got 200
+  GET /api/reservations/mine — expected 200, got 200
+  GET /api/reservations/mine — expected 200, got 200
+  GET /api/reservations/1 — expected 200, got 200
+  GET /api/reservations/1 — expected 404, got 404
+  DELETE /api/equipment/11 — expected 409, got 409
+  PUT /api/equipment/11 — expected 409, got 409
+  PUT /api/reservations/1/status/BORROWED — expected 403, got 403
+  PUT /api/reservations/1/status/BORROWED — expected 200, got 200
+  GET /api/equipment/11 — expected 200, got 200
+  PUT /api/reservations/1/status/RETURNED — expected 200, got 200
+  PUT /api/reservations/1/status/RETURNED — expected 409, got 409
+  GET /api/equipment/11 — expected 200, got 200
+  POST /api/reservations — expected 201, got 201
+  PUT /api/reservations/2/status/CANCELLED — expected 200, got 200
+  PUT /api/reservations/2/status/CANCELLED — expected 409, got 409
+  GET /api/equipment/11 — expected 200, got 200
+PASS: custodian permissions, pickup, return, cancellation and status conflict.
+PASS: quantity limits, competing requests for the final unit, stock and per-account history.

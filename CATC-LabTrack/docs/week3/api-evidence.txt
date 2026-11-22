@@ -1,0 +1,78 @@
+  GET /api/csrf — expected 200, got 200
+  GET /api/csrf — expected 200, got 200
+1. Create valid equipment
+  POST /api/equipment — expected 201, got 201
+    Request body: {"assetCode": "EE-MM-001", "name": "Digital Multimeter", "location": "EE Laboratory", "status": "AVAILABLE"}
+    Response body: {"id": 7, "assetCode": "EE-MM-001", "name": "Digital Multimeter", "description": null, "imageUrl": null, "location": "EE Laboratory", "status": "AVAILABLE", "totalUnits": 1, "availableUnits": 1}
+2. List, retrieve and filter
+  GET /api/equipment — expected 200, got 200
+    Response body: [{"id": 2, "assetCode": "CATC-CLM001CM", "name": "Clamp Meter", "description": "Measures AC current without breaking the circuit.", "imageUrl": null, "location": "Engineering Laboratory 1 | Room 301", "status": "AVAILABLE", "totalUnits": 2, "availableUnits": 2}, {"id": 5, "assetCode": "CATC-FGN001FG", "name": "Function Generator", "description": "Produces sine, square and triangle test signals.", "imageUrl": null, "location": "Engineering Laboratory 2 | Room 305", "status": "AVAILABLE", "totalUnits": 2, "availableUnits": 2}, {"id": 6, "assetCode": "CATC-INS001IT", "name": "Insulation Resistance Tester", "description": "Checks the insulation condition of wires and motors.", "imageUrl": null, "location": "Engineering Laboratory 2 | Room 305", "status": "BORROWED", "totalUnits": 1, "availableUnits": 0}, {"id": 1, "assetCode": "CATC-MLT001DM", "name": "Digital Multimeter", "description": "Measures voltage, current and resistance with auto-ranging.", "imageUrl": null, "location": "Engineering Laboratory 1 | Room 301", "status": "AVAILABLE", "totalUnits": 3, "availableUnits": 3}, {"id": 3, "assetCode": "CATC-OSC001DO", "name": "Digital Oscilloscope", "description": "Displays and measures signal waveforms.", "imageUrl": null, "location": "Engineering Laboratory 1 | Room 301", "status": "AVAILABLE", "totalUnits": 2, "availableUnits": 2}, {"id": 4, "assetCode": "CATC-PSU001DP", "name": "DC Power Supply", "description": "Adjustable bench supply for powering and testing circuits.", "imageUrl": null, "location": "Engineering Laboratory 2 | Room 305", "status": "AVAILABLE", "totalUnits": 3, "availableUnits": 3}, {"id": 7, "assetCode": "EE-MM-001", "name": "Digital Multimeter", "description": null, "imageUrl": null, "location": "EE Laboratory", "status": "AVAILABLE", "totalUnits": 1, "availableUnits": 1}]
+  GET /api/equipment/7 — expected 200, got 200
+    Response body: {"id": 7, "assetCode": "EE-MM-001", "name": "Digital Multimeter", "description": null, "imageUrl": null, "location": "EE Laboratory", "status": "AVAILABLE", "totalUnits": 1, "availableUnits": 1}
+  GET /api/equipment?location=ee — expected 200, got 200
+    Response body: [{"id": 2, "assetCode": "CATC-CLM001CM", "name": "Clamp Meter", "description": "Measures AC current without breaking the circuit.", "imageUrl": null, "location": "Engineering Laboratory 1 | Room 301", "status": "AVAILABLE", "totalUnits": 2, "availableUnits": 2}, {"id": 5, "assetCode": "CATC-FGN001FG", "name": "Function Generator", "description": "Produces sine, square and triangle test signals.", "imageUrl": null, "location": "Engineering Laboratory 2 | Room 305", "status": "AVAILABLE", "totalUnits": 2, "availableUnits": 2}, {"id": 6, "assetCode": "CATC-INS001IT", "name": "Insulation Resistance Tester", "description": "Checks the insulation condition of wires and motors.", "imageUrl": null, "location": "Engineering Laboratory 2 | Room 305", "status": "BORROWED", "totalUnits": 1, "availableUnits": 0}, {"id": 1, "assetCode": "CATC-MLT001DM", "name": "Digital Multimeter", "description": "Measures voltage, current and resistance with auto-ranging.", "imageUrl": null, "location": "Engineering Laboratory 1 | Room 301", "status": "AVAILABLE", "totalUnits": 3, "availableUnits": 3}, {"id": 3, "assetCode": "CATC-OSC001DO", "name": "Digital Oscilloscope", "description": "Displays and measures signal waveforms.", "imageUrl": null, "location": "Engineering Laboratory 1 | Room 301", "status": "AVAILABLE", "totalUnits": 2, "availableUnits": 2}, {"id": 4, "assetCode": "CATC-PSU001DP", "name": "DC Power Supply", "description": "Adjustable bench supply for powering and testing circuits.", "imageUrl": null, "location": "Engineering Laboratory 2 | Room 305", "status": "AVAILABLE", "totalUnits": 3, "availableUnits": 3}, {"id": 7, "assetCode": "EE-MM-001", "name": "Digital Multimeter", "description": null, "imageUrl": null, "location": "EE Laboratory", "status": "AVAILABLE", "totalUnits": 1, "availableUnits": 1}]
+  GET /api/equipment?location=no-match — expected 200, got 200
+    Response body: []
+3. Update with unchanged asset code
+  PUT /api/equipment/7 — expected 200, got 200
+    Request body: {"assetCode": "EE-MM-001", "name": "Digital Multimeter", "location": "EE Laboratory", "status": "BORROWED"}
+    Response body: {"id": 7, "assetCode": "EE-MM-001", "name": "Digital Multimeter", "description": null, "imageUrl": null, "location": "EE Laboratory", "status": "BORROWED", "totalUnits": 1, "availableUnits": 0}
+  GET /api/equipment/7 — expected 200, got 200
+    Response body: {"id": 7, "assetCode": "EE-MM-001", "name": "Digital Multimeter", "description": null, "imageUrl": null, "location": "EE Laboratory", "status": "BORROWED", "totalUnits": 1, "availableUnits": 0}
+4. Delete as ADMIN
+  POST /api/equipment — expected 201, got 201
+    Request body: {"assetCode": "EE-MM-002", "name": "Digital Multimeter", "location": "EE Laboratory", "status": "AVAILABLE"}
+    Response body: {"id": 8, "assetCode": "EE-MM-002", "name": "Digital Multimeter", "description": null, "imageUrl": null, "location": "EE Laboratory", "status": "AVAILABLE", "totalUnits": 1, "availableUnits": 1}
+  DELETE /api/equipment/8 — expected 204, got 204
+    Response body: (empty)
+  GET /api/equipment/8 — expected 404, got 404
+    Response body: {"message": "Equipment 8 was not found."}
+5. Invalid input and invalid enum
+  POST /api/equipment — expected 400, got 400
+    Request body: {"assetCode": "EE-MM-001", "name": "", "location": "EE Laboratory", "status": "AVAILABLE"}
+    Response body: {"message": "must not be blank", "field": "name"}
+  POST /api/equipment — expected 400, got 400
+    Request body: {"assetCode": "EE-MM-001", "name": "Digital Multimeter", "location": "EE Laboratory", "status": "unknown"}
+    Response body: {"message": "The request could not be read. Please check the values and try again."}
+  POST /api/equipment — expected 400, got 400
+    Request body: {"assetCode": "EE-MM-001", "name": "Digital Multimeter", "location": "EE Laboratory", "status": 0}
+    Response body: {"message": "The request could not be read. Please check the values and try again."}
+6. Missing item
+  GET /api/equipment/999999 — expected 404, got 404
+    Response body: {"message": "Equipment 999999 was not found."}
+  PUT /api/equipment/999999 — expected 404, got 404
+    Request body: {"assetCode": "EE-MM-001", "name": "Digital Multimeter", "location": "EE Laboratory", "status": "AVAILABLE"}
+    Response body: {"message": "Equipment 999999 was not found."}
+  DELETE /api/equipment/999999 — expected 404, got 404
+    Response body: {"message": "Equipment 999999 was not found."}
+7. Duplicate code on create and update
+  POST /api/equipment — expected 409, got 409
+    Request body: {"assetCode": "ee-mm-001", "name": "Digital Multimeter", "location": "EE Laboratory", "status": "AVAILABLE"}
+    Response body: {"message": "Asset code EE-MM-001 is already registered."}
+  POST /api/equipment — expected 201, got 201
+    Request body: {"assetCode": "EE-MM-003", "name": "Digital Multimeter", "location": "EE Laboratory", "status": "AVAILABLE"}
+    Response body: {"id": 9, "assetCode": "EE-MM-003", "name": "Digital Multimeter", "description": null, "imageUrl": null, "location": "EE Laboratory", "status": "AVAILABLE", "totalUnits": 1, "availableUnits": 1}
+  PUT /api/equipment/9 — expected 409, got 409
+    Request body: {"assetCode": "EE-MM-001", "name": "Digital Multimeter", "location": "EE Laboratory", "status": "AVAILABLE"}
+    Response body: {"message": "Asset code EE-MM-001 is already registered."}
+  GET /api/equipment/9 — expected 200, got 200
+    Response body: {"id": 9, "assetCode": "EE-MM-003", "name": "Digital Multimeter", "description": null, "imageUrl": null, "location": "EE Laboratory", "status": "AVAILABLE", "totalUnits": 1, "availableUnits": 1}
+  GET /api/equipment/7 — expected 200, got 200
+    Response body: {"id": 7, "assetCode": "EE-MM-001", "name": "Digital Multimeter", "description": null, "imageUrl": null, "location": "EE Laboratory", "status": "BORROWED", "totalUnits": 1, "availableUnits": 0}
+8. Missing and invalid credentials
+  GET /api/equipment — expected 401, got 401
+    Response body: {"timestamp": "2026-11-22T13:01:42.198+00:00", "status": 401, "error": "Unauthorized", "path": "/api/equipment"}
+  GET /api/equipment — expected 401, got 401
+    Response body: {"timestamp": "2026-11-22T13:01:42.280+00:00", "status": 401, "error": "Unauthorized", "path": "/api/equipment"}
+9. Deny USER delete with a valid token
+  DELETE /api/equipment/7 — expected 403, got 403
+    Response body: {"timestamp": "2026-11-22T13:01:42.353+00:00", "status": 403, "error": "Forbidden", "path": "/api/equipment/7"}
+  GET /api/equipment/7 — expected 200, got 200
+    Response body: {"id": 7, "assetCode": "EE-MM-001", "name": "Digital Multimeter", "description": null, "imageUrl": null, "location": "EE Laboratory", "status": "BORROWED", "totalUnits": 1, "availableUnits": 0}
+10. Retrieve a new record in a separate request
+  POST /api/equipment — expected 201, got 201
+    Request body: {"assetCode": "EE-MM-004", "name": "Digital Multimeter", "location": "EE Laboratory", "status": "AVAILABLE"}
+    Response body: {"id": 10, "assetCode": "EE-MM-004", "name": "Digital Multimeter", "description": null, "imageUrl": null, "location": "EE Laboratory", "status": "AVAILABLE", "totalUnits": 1, "availableUnits": 1}
+  GET /api/equipment/10 — expected 200, got 200
+    Response body: {"id": 10, "assetCode": "EE-MM-004", "name": "Digital Multimeter", "description": null, "imageUrl": null, "location": "EE Laboratory", "status": "AVAILABLE", "totalUnits": 1, "availableUnits": 1}
+All ten checks passed.

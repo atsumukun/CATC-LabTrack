@@ -1,0 +1,1 @@
+Login, search, student booking, profile, history and admin pickup/return passed.
