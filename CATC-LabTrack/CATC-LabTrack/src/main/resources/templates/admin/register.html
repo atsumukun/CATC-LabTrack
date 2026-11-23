@@ -5,9 +5,11 @@
     <title>Equipment register · CATC LabTrack</title>
     <link rel="icon" th:href="@{/img/catc-logo.png}">
     <link rel="stylesheet" th:href="@{/css/user-dashboard.css}">
-    <script src="/js/register.js" defer></script>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <script th:src="@{/js/admin.js}" defer></script>
 </head>
-<body>
+<body th:attr="data-csrf-header=${_csrf.headerName},data-csrf-token=${_csrf.token}">
+
 <header class="topbar">
     <div class="brand">
         <span class="logo-badge"><img th:src="@{/img/catc-logo.png}" alt="CATC logo" width="34" height="34"></span>
@@ -24,30 +26,223 @@
         <div>
             <p class="hero-kicker">Custodian workspace</p>
             <h1>Equipment register</h1>
-            <p>View the laboratory inventory and register new equipment.</p>
+            <p>Manage the laboratory inventory and handle reservation requests.</p>
         </div>
         <ul class="stats" aria-label="Summary">
             <li><b th:text="${#lists.size(items)}">0</b><span>Equipment shown</span></li>
+            <li><b th:text="${#lists.size(reservations.?[status().name() == 'PENDING'])}">0</b><span>Pending</span></li>
+            <li><b th:text="${#lists.size(reservations.?[status().name() == 'BORROWED'])}">0</b><span>Borrowed</span></li>
         </ul>
     </div>
 </section>
 
 <main>
-    <section th:replace="~{shared/equipment :: catalog(true)}"></section>
-    <section th:replace="~{shared/equipment :: create}"></section>
-<section class="card"><div class="card-head"><h2>Reservations</h2></div><div class="form-pad">
-      <p th:if="${#lists.isEmpty(reservations)}">No reservations yet.</p>
-      <article th:each="r : ${reservations}">
-        <h3 th:text="${r.reference() + ' · ' + r.equipmentName()}"></h3>
-        <p th:text="${r.borrowerName() + ' · ' + r.quantity() + ' unit(s) · ' + r.useDate() + ' · ' + r.status()}"></p>
-        <form th:each="action : ${r.status().name() == 'PENDING' ? {'BORROWED','CANCELLED'} : (r.status().name() == 'BORROWED' ? {'RETURNED'} : {})}"
-              class="equipment-action" data-method="PUT"
-              th:attr="data-url=@{/api/reservations/{id}/status/{next}(id=${r.id()},next=${action})}">
-          <button th:text="${action == 'BORROWED' ? 'Confirm pickup' : (action == 'RETURNED' ? 'Record return' : 'Cancel reservation')}"></button>
-          <output role="status"></output>
-        </form>
-      </article>
-    </div></section>
+    <!-- ================= Equipment list ================= -->
+    <section class="card">
+        <div class="card-head"><h2>Equipment list</h2></div>
+        <div class="toolbar">
+            <form method="get" class="filters">
+                <label class="field">
+                    <span>Lab location</span>
+                    <input name="location" th:value="${location}" placeholder="e.g. Electrical Engineering">
+                </label>
+                <button class="btn btn-secondary">Search</button>
+            </form>
+        </div>
+        <div class="scroll">
+            <table class="admin-table">
+                <caption class="sr-only">Equipment by asset code</caption>
+                <thead><tr><th>Asset code</th><th>Equipment</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                <tr th:each="item : ${items}"
+                    th:attr="data-id=${item.id()},data-code=${item.assetCode()},data-name=${item.name()},data-description=${item.description()},data-image=${item.imageUrl()},data-location=${item.location()},data-total=${item.totalUnits()},data-status=${item.status().name()}">
+                    <td data-label="Asset code"><span class="code" th:text="${item.assetCode()}">CATC-MLT001DM</span></td>
+                    <td data-label="Equipment">
+                        <div class="equip">
+                            <span class="thumb" th:attr="data-letter=${item.name().substring(0,1)}">
+                                <img th:if="${item.imageUrl() != null and !#strings.isEmpty(item.imageUrl())}" th:src="${item.imageUrl()}" alt="" width="64" height="64" loading="lazy" onerror="this.classList.add('broken')">
+                            </span>
+                            <div>
+                                <strong th:text="${item.name()}">Digital Multimeter</strong>
+                                <span th:text="${item.description()}">Short description</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="Location" th:text="${item.location()}">Engineering Laboratory 1 | Room 301</td>
+                    <td data-label="Status">
+                        <span th:class="${'badge badge-' + item.status().name().toLowerCase()}" th:text="${item.status()}">AVAILABLE</span>
+                        <small class="units" th:text="${item.availableUnits() + ' of ' + item.totalUnits() + ' free'}">3 of 3 free</small>
+                    </td>
+                    <td data-label="Actions" class="action">
+                        <div class="row-actions">
+                            <button type="button" class="btn btn-sm btn-edit js-edit">
+                                <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+                                Edit
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger js-delete">
+                                <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg>
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(items)}" class="empty"><td colspan="5">No equipment matches this location.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ================= Register a new item ================= -->
+    <section class="card">
+        <details>
+            <summary>Register a new item</summary>
+            <form id="create-form" class="grid-form form-pad">
+                <label class="field"><span>Asset code</span><input required name="assetCode" maxlength="32" pattern="[A-Za-z0-9\-]+" placeholder="CATC-MLT002DM"></label>
+                <label class="field"><span>Equipment name</span><input required name="name" maxlength="80"></label>
+                <label class="field"><span>Short description</span><input name="description" maxlength="255" placeholder="What it is used for"></label>
+                <label class="field"><span>Picture link (optional)</span><input name="imageUrl" maxlength="255" placeholder="https://… (leave blank to show a letter)"></label>
+                <label class="field"><span>Lab location</span><input required name="location" maxlength="80" placeholder="Engineering Laboratory 1 | Room 302"></label>
+                <label class="field"><span>Units in stock</span><input name="totalUnits" type="number" min="1" max="99" value="1"></label>
+                <label class="field"><span>Current status</span>
+                    <select name="status"><option>AVAILABLE</option><option>RESERVED</option><option>BORROWED</option></select>
+                </label>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save equipment</button>
+                    <output role="status"></output>
+                </div>
+            </form>
+        </details>
+    </section>
+
+    <!-- ================= Reservations ================= -->
+    <section class="card" aria-labelledby="resv-title">
+        <div class="card-head">
+            <h2 id="resv-title">Reservations</h2>
+            <span class="count-chip" th:text="${#lists.size(reservations) + ' total'}">0 total</span>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(reservations)}">
+            <span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 13l2 2 4-4"/></svg></span>
+            <strong>No reservations yet</strong>
+            <p class="muted">Requests from students will appear here as <b>Pending</b>.</p>
+        </div>
+
+        <div class="scroll" th:unless="${#lists.isEmpty(reservations)}">
+            <table class="admin-table compact">
+                <caption class="sr-only">Reservation requests</caption>
+                <thead>
+                <tr><th>Reference</th><th>Borrower</th><th>Equipment</th><th>Qty</th><th>Borrow date</th><th>Return by</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="r : ${reservations}">
+                    <td data-label="Reference"><span class="code" th:text="${r.reference()}">RSV-00001</span></td>
+                    <td data-label="Borrower">
+                        <div class="stack">
+                            <strong th:text="${r.borrowerName()}">User N. Demo</strong>
+                            <small th:text="${r.studentId() + ' · ' + r.program() + ' ' + r.yearLevel()}">ID · Program</small>
+                        </div>
+                    </td>
+                    <td data-label="Equipment">
+                        <div class="equip-mini">
+                            <span class="thumb" th:attr="data-letter=${r.equipmentName().substring(0,1)}"></span>
+                            <div class="stack">
+                                <strong th:text="${r.equipmentName()}">DC Power Supply</strong>
+                                <small th:text="${r.assetCode()}">CATC-PSU001DP</small>
+                                <small th:text="${'Subject: ' + r.subject() + ' | Instructor: ' + r.instructorName()}">Subject</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="Qty" class="num" th:text="${r.quantity()}">2</td>
+                    <td data-label="Borrow date" th:text="${#temporals.format(r.useDate(), 'MMM d, yyyy')}">Nov 23, 2026</td>
+                    <td data-label="Return by"><b th:text="${#temporals.format(r.returnDate(), 'MMM d, yyyy')}">Nov 26, 2026</b></td>
+                    <td data-label="Status"><span th:class="${'badge badge-r-' + r.status().name().toLowerCase()}" th:text="${r.status()}">PENDING</span></td>
+                    <td data-label="Actions" class="action">
+                        <div class="row-actions" th:switch="${r.status().name()}">
+                            <th:block th:case="'PENDING'">
+                                <button type="button" class="btn btn-sm btn-primary js-reservation" data-act="BORROWED"
+                                        th:attr="data-url=@{/api/reservations/{id}/status/{next}(id=${r.id()},next='BORROWED')}">
+                                    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                                    Confirm pickup
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger-soft js-reservation" data-act="CANCELLED"
+                                        th:attr="data-url=@{/api/reservations/{id}/status/{next}(id=${r.id()},next='CANCELLED')},data-ref=${r.reference()},data-equipment=${r.equipmentName()}">
+                                    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+                                    Cancel
+                                </button>
+                            </th:block>
+                            <th:block th:case="'BORROWED'">
+                                <button type="button" class="btn btn-sm btn-primary js-reservation" data-act="RETURNED"
+                                        th:attr="data-url=@{/api/reservations/{id}/status/{next}(id=${r.id()},next='RETURNED')}">
+                                    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>
+                                    Record return
+                                </button>
+                            </th:block>
+                            <span th:case="*" class="muted">&mdash;</span>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
 </main>
+
+<!-- ================= Edit pop-up ================= -->
+<dialog id="edit-dialog" aria-labelledby="edit-title">
+    <form id="edit-form" method="dialog">
+        <header class="dlg-head">
+            <div>
+                <p class="eyebrow">Edit equipment</p>
+                <h2 id="edit-title">Equipment</h2>
+            </div>
+            <button type="button" class="icon-btn" data-close aria-label="Close">&times;</button>
+        </header>
+        <div class="dlg-body">
+            <div class="edit-preview">
+                <span class="thumb" id="edit-thumb" data-letter="?"><img alt="" width="64" height="64"></span>
+                <span class="muted">Picture preview. If the link is empty or broken, the first letter is shown, like on the student page.</span>
+            </div>
+            <div class="row">
+                <label class="field"><span>Asset code</span><input required name="assetCode" maxlength="32" pattern="[A-Za-z0-9\-]+"></label>
+                <label class="field"><span>Equipment name</span><input required name="name" maxlength="80"></label>
+            </div>
+            <label class="field"><span>Short description</span><textarea name="description" maxlength="255"></textarea></label>
+            <label class="field"><span>Picture link (optional)</span><input name="imageUrl" maxlength="255" placeholder="https://…"></label>
+            <label class="field"><span>Lab location</span><input required name="location" maxlength="80"></label>
+            <div class="row">
+                <label class="field"><span>Units in stock</span><input name="totalUnits" type="number" min="1" max="99"></label>
+                <label class="field"><span>Status</span>
+                    <select name="status">
+                        <option th:each="state : ${T(ph.edu.catc.labtrack.equipment.model.Status).values()}" th:value="${state.name()}" th:text="${state}"></option>
+                    </select>
+                </label>
+            </div>
+            <p class="form-error" id="edit-error" role="alert" hidden></p>
+        </div>
+        <footer class="dlg-foot">
+            <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+            <button type="submit" class="btn btn-primary" id="edit-save">Save changes</button>
+        </footer>
+    </form>
+</dialog>
+
+<!-- ================= Confirm pop-up (delete / cancel) ================= -->
+<dialog id="confirm-dialog" class="confirm" aria-labelledby="confirm-title">
+    <div class="confirm-body">
+        <span class="warn-icon" aria-hidden="true">
+            <svg class="i" viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg>
+        </span>
+        <h2 id="confirm-title">Are you sure?</h2>
+        <p class="muted" id="confirm-text"></p>
+        <p class="target" id="confirm-target"></p>
+        <p class="form-error" id="confirm-error" role="alert" hidden></p>
+    </div>
+    <footer class="dlg-foot center">
+        <button type="button" class="btn btn-ghost" data-close>Keep it</button>
+        <button type="button" class="btn btn-danger" id="confirm-yes">Confirm</button>
+    </footer>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
