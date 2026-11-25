@@ -1,0 +1,965 @@
+{
+  "info": {
+    "name": "CATC LabTrack \u00b7 Ten HTTP checks",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup \u00b7 user session",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/csrf",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set(\"userToken\", pm.response.json().token);",
+              "pm.collectionVariables.set(\"userCookie\", pm.response.headers.get(\"Set-Cookie\").split(\";\")[0]);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setup \u00b7 admin session",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/csrf",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "admin",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "admin-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set(\"adminToken\", pm.response.json().token);",
+              "pm.collectionVariables.set(\"adminCookie\", pm.response.headers.get(\"Set-Cookie\").split(\";\")[0]);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "1 \u00b7 Create meter",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/equipment",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "{{userCookie}}"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{userToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"assetCode\": \"PM-{{run}}-A\",\n  \"name\": \"Demo meter\",\n  \"location\": \"EE Laboratory\",\n  \"status\": \"AVAILABLE\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"run\", Date.now().toString());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"Verify response data\", () => { pm.expect(pm.response.json().id).to.be.a(\"number\"); });",
+              "pm.collectionVariables.set(\"itemA\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 \u00b7 List",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/equipment",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Verify response data\", () => { pm.expect(pm.response.json().map(x => x.id)).to.include(Number(pm.collectionVariables.get(\"itemA\"))); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 \u00b7 Retrieve meter",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/equipment/{{itemA}}",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Verify response data\", () => { pm.expect(pm.response.json().name).to.equal(\"Demo meter\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 \u00b7 Filter by location",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/equipment?location=ee",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Verify response data\", () => { pm.expect(pm.response.json().map(x => x.id)).to.include(Number(pm.collectionVariables.get(\"itemA\"))); });",
+              "pm.test(\"Verify response data\", () => { pm.response.json().forEach(x => pm.expect(x.location.toLowerCase()).to.include(\"ee\")); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 \u00b7 Update with same asset code",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/equipment/{{itemA}}",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "{{userCookie}}"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{userToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"assetCode\": \"PM-{{run}}-A\",\n  \"name\": \"Updated meter\",\n  \"location\": \"EE Laboratory\",\n  \"status\": \"AVAILABLE\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Verify response data\", () => { pm.expect(pm.response.json().name).to.equal(\"Updated meter\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 \u00b7 Confirm update",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/equipment/{{itemA}}",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Verify response data\", () => { pm.expect(pm.response.json().name).to.equal(\"Updated meter\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5 \u00b7 Reject empty name",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/equipment",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "{{userCookie}}"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{userToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"assetCode\": \"PM-{{run}}-A\",\n  \"name\": \"\",\n  \"location\": \"EE Laboratory\",\n  \"status\": \"AVAILABLE\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Verify response data\", () => { pm.expect(pm.response.json().field).to.include(\"name\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6 \u00b7 Missing ID",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/equipment/999999",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+              "pm.test(\"Verify response data\", () => { pm.expect(pm.response.json().message).to.be.a(\"string\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7 \u00b7 Reject duplicate create",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/equipment",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "{{userCookie}}"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{userToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"assetCode\": \"PM-{{run}}-A\",\n  \"name\": \"Demo meter\",\n  \"location\": \"EE Laboratory\",\n  \"status\": \"AVAILABLE\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7 \u00b7 Create second meter",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/equipment",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "{{userCookie}}"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{userToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"assetCode\": \"PM-{{run}}-B\",\n  \"name\": \"Demo meter\",\n  \"location\": \"EE Laboratory\",\n  \"status\": \"AVAILABLE\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"Verify response data\", () => { pm.expect(pm.response.json().id).to.be.a(\"number\"); });",
+              "pm.collectionVariables.set(\"itemB\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7 \u00b7 Reject duplicate update",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/equipment/{{itemB}}",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "{{userCookie}}"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{userToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"assetCode\": \"PM-{{run}}-A\",\n  \"name\": \"Demo meter\",\n  \"location\": \"EE Laboratory\",\n  \"status\": \"AVAILABLE\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7 \u00b7 Confirm original code A",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/equipment/{{itemA}}",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Verify response data\", () => { pm.expect(pm.response.json().assetCode).to.equal(pm.variables.replaceIn(\"PM-{{run}}-A\")); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7 \u00b7 Confirm original code B",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/equipment/{{itemB}}",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Verify response data\", () => { pm.expect(pm.response.json().assetCode).to.equal(pm.variables.replaceIn(\"PM-{{run}}-B\")); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8 \u00b7 Credentials \u00b7 none",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/equipment",
+        "auth": {
+          "type": "noauth"
+        },
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8 \u00b7 Credentials \u00b7 wrong",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/equipment",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "wrong-password",
+              "type": "string"
+            }
+          ]
+        },
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "9 \u00b7 USER delete with valid token",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/equipment/{{itemA}}",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "{{userCookie}}"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{userToken}}"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "9 \u00b7 Confirm meter still exists",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/equipment/{{itemA}}",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "user",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "user-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Verify response data\", () => { pm.expect(pm.response.json().name).to.equal(\"Updated meter\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 \u00b7 Separate client retrieves saved record",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/equipment/{{itemB}}",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "admin",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "admin-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Verify response data\", () => { pm.expect(pm.response.json().id).to.equal(Number(pm.collectionVariables.get(\"itemB\"))); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 \u00b7 ADMIN deletes meter",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/equipment/{{itemA}}",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "admin",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "admin-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "{{adminCookie}}"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{adminToken}}"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 \u00b7 Confirm deleted meter is missing",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/equipment/{{itemA}}",
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "admin",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "admin-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
