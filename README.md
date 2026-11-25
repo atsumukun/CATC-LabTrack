@@ -8,7 +8,7 @@ Each equipment entry has a unique asset code, name, location, status and unit co
 
 Start in the repository root, the folder containing this README. The Maven project starts at the [root pom.xml](pom.xml). Use **JDK 25** and **Maven 3.6.3 or later**. Check that `mvn -v` reports Java 25.
 
-```powershell
+```sh
 mvn clean package
 java -jar target/labtrack-0.1.0.jar
 ```
@@ -26,14 +26,9 @@ The server listens on loopback. Startup creates both accounts and seeds six equi
 
 ## Verify the application
 
-Leave LabTrack running. In a second terminal at the repository root, use Python 3 to run the checks below. Start with a fresh application instance each time you run the ten equipment checks because the script reuses fixed asset codes.
+Leave LabTrack running. In **Postman Desktop → Import**, select [the CATC LabTrack collection](docs/CATC-LabTrack.postman_collection.json). Open the collection, choose **Run**, and run all requests once in their saved order. The two setup requests get separate USER and ADMIN sessions. The create request generates a fresh asset code and later requests reuse the returned IDs. Delete runs last so earlier checks can still read the meter.
 
-```powershell
-python docs/verify_api.py http://127.0.0.1:8080 --evidence
-python docs/verify_reservations.py
-```
-
-The first script prints requests, expected and actual status codes, and response bodies. A successful run ends with `All ten checks passed.` The second checks reservation quantities, competing requests for the last unit, account history, pickup, return, and cancellation. For a short interactive API demo on Windows, run `.\docs\try-api.ps1` in PowerShell.
+For a walkthrough, open each request and click **Send** in the same order. Inspect **Body** and **Test Results** after each response. A passing permission check shows the expected 403 and a subsequent GET confirms the meter still exists. Save your own run summary or screenshots for the demonstration.
 
 For the browser demo, sign in as USER, search for a clamp meter, reserve an available unit, and find its reference under **My Reservations**. Sign out, sign in as ADMIN, and use that reference to confirm pickup and record the return. The planned return date is three days after the borrow date. Late fees are informational.
 
@@ -110,7 +105,7 @@ Java paths below start at `src/main/java/ph/edu/catc/labtrack/`. Resource paths 
 
 - Package the source with the root POM, README, configuration and docs. Open the extracted POM in IntelliJ to check the submitted copy.
 - Review the [editable report](docs/week3/LabTrack-Week3.docx) and its [PDF](docs/week3/LabTrack-Week3.pdf). The guide asks for about 4–6 pages excluding the cover and evidence. Each member should enter their actual contribution and personal checks, then export the updated PDF.
-- Use the [saved PowerShell requests](docs/try-api.ps1) and [ten-check transcript](docs/week3/api-evidence.txt). For each check record the input, expected result, actual result and pass/fail, with a saved response or screenshot.
+- Use the [saved Postman requests](docs/CATC-LabTrack.postman_collection.json) and [ten-check transcript](docs/week3/api-evidence.txt). For each check record the input, expected result, actual result and pass/fail, with a saved response or screenshot.
 - Follow the [five-member rehearsal](docs/week3/rehearsal.md) for the 10–15 minute demonstration. Each member explains one contribution and traces a request through the controller, service, repository and database.
 
 **AI-use note.** ChatGPT/Codex assisted with implementation, test preparation and documentation. The team should describe what it reviewed, tested and corrected in the submitted report.
