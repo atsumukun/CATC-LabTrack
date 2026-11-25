@@ -24,11 +24,17 @@ Once the console shows `Started LabTrackApplication`, open the [local login page
 
 The server listens on loopback. Startup creates both accounts and seeds six equipment records. H2 stores data in memory, so restarting restores the sample inventory and clears reservations and edits.
 
-## Verify the application
+## Test the HTTP requests in Postman Desktop
 
-Leave LabTrack running. In **Postman Desktop → Import**, select [the CATC LabTrack collection](docs/CATC-LabTrack.postman_collection.json). Open the collection, choose **Run**, and run all requests once in their saved order. The two setup requests get separate USER and ADMIN sessions. The create request generates a fresh asset code and later requests reuse the returned IDs. Delete runs last so earlier checks can still read the meter.
+1. Leave LabTrack running in IntelliJ. In the extracted project, open the `docs` folder and locate `CATC-LabTrack.postman_collection.json`. If you are viewing the project on GitHub, open the collection file and click **Download raw file** (the down arrow). [Open the collection file](docs/CATC-LabTrack.postman_collection.json).
+2. Open **Postman Desktop → Import** and drag the downloaded JSON file into the import window. Under **Collections**, open **CATC LabTrack · Ten HTTP checks**.
+3. Open **Setup · user session** and click **Send**. Expect **200 OK**. Do the same for **Setup · admin session**. These requests save each account’s session and CSRF token automatically.
+4. Open **1 · Create meter** and click **Send**. Expect **201 Created** and a numeric `id` in the response body. The collection saves that ID for the next requests.
+5. Continue down the collection in its displayed order, clicking **Send** once per request. Some course checks have several requests. The ADMIN deletion runs last so the meter is available for the earlier checks.
 
-For a walkthrough, open each request and click **Send** in the same order. Inspect **Body** and **Test Results** after each response. A passing permission check shows the expected 403 and a subsequent GET confirms the meter still exists. Save your own run summary or screenshots for the demonstration.
+Open **Test Results** after each response. For example, the USER delete request should return **403 Forbidden**, and the next GET should return **200 OK** for the same meter. Capture the request name, status and test result for your evidence. Keep session cookies and token values out of screenshots.
+
+### Browser demonstration
 
 For the browser demo, sign in as USER, search for a clamp meter, reserve an available unit, and find its reference under **My Reservations**. Sign out, sign in as ADMIN, and use that reference to confirm pickup and record the return. The planned return date is three days after the borrow date. Late fees are informational.
 
