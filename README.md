@@ -60,16 +60,3 @@ API clients can use HTTP Basic. Passwords are stored as BCrypt hashes. For write
 | 3 · REST and validation | **1** Create a record and show its generated ID. **5** Show invalid input returning 400. **6** Show a missing ID returning 404. |
 | 4 · Security and admin | **4** Delete as ADMIN and verify the item is gone. **8** Show 401 for missing or wrong credentials. **9** Show 403 for USER deletion with a valid CSRF token and verify the item still exists. |
 | 5 · Student interface | **2** List, retrieve, and filter equipment through the API. Demonstrate search, booking, and reservation history in the browser. |
-
-The [Week 3 materials](CATC-LabTrack/docs/week3/) include the editable report, PDF, saved responses, and a 12-minute rehearsal plan. Run the checks on the final build and have each member record their own contribution and test result in the report.
-
-**AI use.** ChatGPT/Codex assisted with the application, verification scripts, and documentation. Each member should identify what they reviewed or corrected and explain the code they present.
-
-## Separate file I/O exercise
-
-From the repository root, change to `activities/file-io` and run `java src/FileIOActivity.java`. The exercise creates or replaces `SD1.txt` in the current directory.
-
-java src/FileIOActivity.java
-```
-
-It creates or replaces `SD1.txt` in the current directory with the text `File was successfully created.`. LabTrack itself uses H2 for its equipment and reservation records.
