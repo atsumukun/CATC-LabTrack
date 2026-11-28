@@ -5,8 +5,7 @@
 }
 
 /* Status pill must never wrap (fixes the stretched BORROWED badge) */
-.badge { white-space: nowrap; line-height: 1.4; }
-.badge-r-cancelled { background: var(--red-100); color: var(--red-700); border: 1px solid var(--red-200); }
+.warn-icon.amber { background: #fff4e0; color: #c77700; border-color: #fffaf0; box-shadow: 0 0 0 1px #f6d8a0; }
 
 /* ---------- Buttons ---------- */
 .btn-sm { padding: 7px 12px; font-size: .85rem; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }

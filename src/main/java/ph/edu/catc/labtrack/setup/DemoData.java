@@ -49,7 +49,7 @@ public class DemoData {
                         null, lab2, Status.AVAILABLE, 2));
                 equipment.create(new EquipmentRequest("CATC-ins001IT", "Insulation Resistance Tester",
                         "Checks the insulation condition of wires and motors.",
-                        null, lab2, Status.BORROWED, 1));
+                        null, lab2, Status.AVAILABLE, 1));
             }
             if (!profiles.exists("user")) {
                 profiles.create("user", "S240000", "User N. Demo", "01234567891", "user@gmail.com",

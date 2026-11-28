@@ -44,10 +44,15 @@ public class EquipmentService {
     public EquipmentResponse update(long id, EquipmentRequest input) {
         var item = repository.findForUpdate(id).orElseThrow(() -> new EquipmentNotFoundException(id));
         String code = input.assetCode().toUpperCase(Locale.ROOT);
+        String name = input.name().strip();
         if (!item.getAssetCode().equals(code) && repository.existsByAssetCodeIgnoreCase(code)) {
             throw new DuplicateCodeException(code);
         }
-        item.update(code, input.name().strip(), input.location().strip(), input.status(), input.totalUnits(), input.description(), input.imageUrl());
+        if (repository.existsByNameIgnoreCaseAndIdNot(name, id)) {
+            throw new DuplicateNameException(name);
+        }
+        item.update(code, name, input.location().strip(), input.status(), input.totalUnits(),
+                input.description(), input.imageUrl());
         repository.flush();
         return EquipmentResponse.from(item);
     }
@@ -60,9 +65,11 @@ public class EquipmentService {
 
     public EquipmentResponse create(EquipmentRequest input) {
         String code = input.assetCode().toUpperCase(Locale.ROOT);
+        String name = input.name().strip();
         if (repository.existsByAssetCodeIgnoreCase(code)) throw new DuplicateCodeException(code);
+        if (repository.existsByNameIgnoreCase(name)) throw new DuplicateNameException(name);
         int units = input.totalUnits() == null ? 1 : input.totalUnits();
-        var item = new Equipment(code, input.name().strip(), clean(input.description()), clean(input.imageUrl()),
+        var item = new Equipment(code, name, clean(input.description()), clean(input.imageUrl()),
                 input.location().strip(), input.status(), units);
         try {
             return EquipmentResponse.from(repository.saveAndFlush(item));

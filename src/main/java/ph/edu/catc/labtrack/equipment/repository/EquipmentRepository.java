@@ -19,4 +19,6 @@ public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select e from Equipment e where e.id = :id")
     Optional<Equipment> findForUpdate(@Param("id") Long id);
+    boolean existsByNameIgnoreCase(String name);
+    boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
 }

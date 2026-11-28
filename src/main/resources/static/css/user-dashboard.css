@@ -397,3 +397,14 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     .confirm-equip { flex-wrap: wrap; }
     .qty-chip { margin-left: 0; }
 }
+
+/* ---------- Status dots ---------- */
+.badge { white-space: nowrap; line-height: 1.4; }
+.badge::before { width: 9px; height: 9px; box-shadow: 0 0 0 2px rgba(255, 255, 255, .9); }
+.badge-available::before { background: #22a559; }            /* green  */
+.badge-reserved::before { background: #f59e0b; }             /* orange */
+.badge-r-pending::before { background: #2b74d4; }            /* blue   */
+.badge-borrowed::before, .badge-r-borrowed::before { background: #e53935; } /* red */
+.badge-r-returned::before { background: #7a8aa0; }           /* gray   */
+.badge-r-cancelled { background: #eef1f5; color: #51637a; border: 1px solid #d5dbe4; }
+.badge-r-cancelled::before { background: #9aa5b4; }

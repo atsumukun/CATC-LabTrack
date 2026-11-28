@@ -12,8 +12,11 @@ import ph.edu.catc.labtrack.reservation.service.ReservationException;
 
 import ph.edu.catc.labtrack.equipment.service.EquipmentNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
+import ph.edu.catc.labtrack.equipment.service.DuplicateNameException;
+
 import java.util.Map;
 import java.util.Objects;
+
 
 @RestControllerAdvice(basePackageClasses = EquipmentController.class)
 public class ApiErrors {
@@ -32,6 +35,10 @@ public class ApiErrors {
     @ExceptionHandler(DuplicateCodeException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     Map<String, String> duplicate(DuplicateCodeException ex) { return Map.of("message", ex.getMessage()); }
+
+    @ExceptionHandler(DuplicateNameException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    Map<String, String> duplicateName(DuplicateNameException ex) { return Map.of("message", ex.getMessage()); }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
